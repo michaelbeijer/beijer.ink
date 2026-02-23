@@ -1,5 +1,15 @@
+import { Prisma } from '@prisma/client';
 import { prisma } from '../lib/prisma.js';
 import { htmlToPlainText } from '../lib/htmlToText.js';
+
+async function updateSearchVector(noteId: string) {
+  await prisma.$executeRaw`
+    UPDATE notes SET search_vector =
+      setweight(to_tsvector('english', coalesce(title, '')), 'A') ||
+      setweight(to_tsvector('english', coalesce(plain_text, '')), 'B')
+    WHERE id = ${noteId}
+  `;
+}
 
 export async function getNotesInNotebook(notebookId: string) {
   return prisma.note.findMany({
@@ -36,7 +46,7 @@ export async function createNote(data: {
 }) {
   const plainText = data.content ? htmlToPlainText(data.content) : '';
 
-  return prisma.note.create({
+  const note = await prisma.note.create({
     data: {
       title: data.title || 'Untitled',
       content: data.content || '',
@@ -50,6 +60,9 @@ export async function createNote(data: {
       tags: { include: { tag: true } },
     },
   });
+
+  await updateSearchVector(note.id);
+  return note;
 }
 
 export async function updateNote(
@@ -68,13 +81,19 @@ export async function updateNote(
     updateData.plainText = htmlToPlainText(data.content);
   }
 
-  return prisma.note.update({
+  const note = await prisma.note.update({
     where: { id },
     data: updateData,
     include: {
       tags: { include: { tag: true } },
     },
   });
+
+  if (data.title !== undefined || data.content !== undefined) {
+    await updateSearchVector(id);
+  }
+
+  return note;
 }
 
 export async function deleteNote(id: string) {

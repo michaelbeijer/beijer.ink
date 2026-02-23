@@ -3,7 +3,9 @@ import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { config } from './config.js';
 import { requireAuth } from './middleware/auth.js';
 import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
@@ -24,6 +26,9 @@ export function createApp() {
   app.use(cors());
   app.use(express.json({ limit: '10mb' }));
 
+  // Health check (unauthenticated, for Railway)
+  app.get('/api/health', (_req, res) => { res.json({ status: 'ok' }); });
+
   // API routes
   app.use('/api/auth', authRoutes);
   app.use('/api/notebooks', requireAuth, notebooksRoutes);
@@ -32,14 +37,16 @@ export function createApp() {
   app.use('/api/search', requireAuth, searchRoutes);
   app.use('/api/images', requireAuth, imagesRoutes);
 
-  // Serve static frontend in production
+  // Serve static frontend in production only
   const publicPath = path.join(__dirname, '..', 'public');
-  app.use(express.static(publicPath));
+  if (!config.isDev() && fs.existsSync(publicPath)) {
+    app.use(express.static(publicPath));
 
-  // SPA fallback
-  app.get('*', (_req, res) => {
-    res.sendFile(path.join(publicPath, 'index.html'));
-  });
+    // SPA fallback
+    app.get('*', (_req, res) => {
+      res.sendFile(path.join(publicPath, 'index.html'));
+    });
+  }
 
   // Error handler
   app.use(errorHandler);

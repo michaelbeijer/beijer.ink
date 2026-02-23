@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import multer from 'multer';
+import { asyncHandler } from '../middleware/asyncHandler.js';
 import * as imagesController from '../controllers/images.controller.js';
 
 const upload = multer({
@@ -16,7 +17,7 @@ const upload = multer({
 
 const router = Router();
 
-router.post('/upload', upload.single('file'), imagesController.upload);
-router.delete('/:id', imagesController.remove);
+router.post('/upload', upload.single('file'), asyncHandler(imagesController.upload));
+router.delete('/:id', asyncHandler(imagesController.remove));
 
 export default router;
