@@ -7,7 +7,15 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.2.0**
+Current Version: **0.2.1**
+
+---
+
+## [0.2.1] — 2026-02-24
+
+### Changed
+- Consolidated Railway deployment: app and PostgreSQL database now in a single project
+- Database connection uses Railway private networking for lower latency and zero egress costs
 
 ---
 
