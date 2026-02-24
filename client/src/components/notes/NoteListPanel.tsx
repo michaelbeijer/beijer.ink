@@ -47,7 +47,7 @@ function DraggableNoteItem({ note, isSelected, isFocused, onSelect }: DraggableN
       role="option"
       aria-selected={isSelected}
       onClick={() => onSelect(note.id)}
-      className={`w-full text-left px-4 py-3 border-b border-slate-100 dark:border-slate-800/50 transition-colors cursor-pointer ${
+      className={`w-full text-left px-4 py-3 border-b border-slate-100 dark:border-slate-800/50 transition-colors cursor-pointer focus:outline-none ${
         isSelected
           ? 'bg-blue-50 dark:bg-blue-600/10 border-l-2 border-l-blue-500'
           : 'hover:bg-slate-50 dark:hover:bg-slate-900'
@@ -108,16 +108,17 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
 
   const createMutation = useMutation({
     mutationFn: createNote,
-    onSuccess: (note) => {
-      queryClient.invalidateQueries({ queryKey: ['notes', notebookId] });
-      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
-      onSelectNote(note.id);
-    },
   });
 
   function handleCreate() {
     if (!notebookId) return;
-    createMutation.mutate({ notebookId });
+    createMutation.mutate({ notebookId }, {
+      onSuccess: (note) => {
+        queryClient.invalidateQueries({ queryKey: ['notes'] });
+        queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+        onSelectNote(note.id);
+      },
+    });
   }
 
   if (!notebookId) {

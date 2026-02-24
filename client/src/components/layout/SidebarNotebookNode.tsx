@@ -86,7 +86,7 @@ export function SidebarNotebookNode({
       aria-level={node.depth + 1}
       aria-expanded={node.hasChildren ? node.isExpanded : undefined}
       aria-selected={isSelected}
-      className={`group flex items-center gap-1 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
+      className={`group flex items-center gap-1 px-2 py-1.5 rounded-md cursor-pointer transition-colors focus:outline-none ${
         showDropHighlight
           ? 'ring-2 ring-blue-500 ring-inset bg-blue-600/10'
           : isSelected
