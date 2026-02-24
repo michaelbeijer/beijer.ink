@@ -4,6 +4,13 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Scale up all rem-based sizing on small screens */
+@media (max-width: 767px) {
+  html {
+    font-size: 118%;
+  }
+}
+
 /* TipTap editor styles */
 .tiptap {
   outline: none;
