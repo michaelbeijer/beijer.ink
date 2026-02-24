@@ -1,30 +1,24 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  PenLine,
-  FolderPlus,
-  ChevronRight,
-  ChevronDown,
-  Folder,
-  MoreHorizontal,
-  Trash2,
-  Edit3,
-  LogOut,
-  Sun,
-  Moon,
-} from 'lucide-react';
+import { PenLine, FolderPlus, LogOut, Sun, Moon } from 'lucide-react';
 import { getNotebooks, createNotebook, deleteNotebook, updateNotebook } from '../../api/notebooks';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { flattenNotebookTree } from '../../utils/flattenNotebookTree';
+import { useTreeKeyboardNav } from '../../hooks/useTreeKeyboardNav';
+import { SidebarNotebookNode } from './SidebarNotebookNode';
+import { SidebarDropRoot } from './SidebarDropRoot';
 import type { Notebook } from '../../types/notebook';
 
 interface SidebarProps {
   selectedNotebookId: string | null;
   onSelectNotebook: (id: string) => void;
   onClose?: () => void;
+  activeItemType?: 'notebook' | 'note' | null;
+  overId?: string | null;
 }
 
-export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: SidebarProps) {
+export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeItemType, overId }: SidebarProps) {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -56,16 +50,29 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
     },
   });
 
-  const rootNotebooks = notebooks.filter((nb: Notebook) => !nb.parentId);
-
-  function toggleExpand(id: string) {
+  const toggleExpand = useCallback((id: string) => {
     setExpandedIds((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);
       else next.add(id);
       return next;
     });
-  }
+  }, []);
+
+  const flatNodes = useMemo(
+    () => flattenNotebookTree(notebooks, expandedIds),
+    [notebooks, expandedIds]
+  );
+
+  const { focusedId, handleKeyDown, handleFocus } = useTreeKeyboardNav({
+    nodes: flatNodes,
+    expandedIds,
+    toggleExpand,
+    onSelect: (id) => {
+      onSelectNotebook(id);
+      onClose?.();
+    },
+  });
 
   function handleCreate() {
     createMutation.mutate({ name: 'New Notebook' });
@@ -92,104 +99,7 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
     }
   }
 
-  function renderNotebook(nb: Notebook, depth = 0) {
-    const children = notebooks.filter((c: Notebook) => c.parentId === nb.id);
-    const hasChildren = children.length > 0;
-    const isExpanded = expandedIds.has(nb.id);
-    const isSelected = nb.id === selectedNotebookId;
-    const isEditing = editingId === nb.id;
-
-    return (
-      <div key={nb.id}>
-        <div
-          className={`group flex items-center gap-1 px-2 py-1.5 rounded-md cursor-pointer transition-colors ${
-            isSelected ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
-          }`}
-          style={{ paddingLeft: `${depth * 16 + 8}px` }}
-          onClick={() => {
-            onSelectNotebook(nb.id);
-            onClose?.();
-          }}
-        >
-          {hasChildren ? (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpand(nb.id);
-              }}
-              className="p-0.5 hover:bg-slate-300 dark:hover:bg-slate-700 rounded"
-            >
-              {isExpanded ? (
-                <ChevronDown className="w-3.5 h-3.5" />
-              ) : (
-                <ChevronRight className="w-3.5 h-3.5" />
-              )}
-            </button>
-          ) : (
-            <span className="w-4.5" />
-          )}
-
-          <Folder className="w-4 h-4 shrink-0" />
-
-          {isEditing ? (
-            <input
-              className="flex-1 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white text-sm px-1 py-0.5 rounded outline-none"
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onBlur={() => handleRename(nb.id)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleRename(nb.id);
-                if (e.key === 'Escape') setEditingId(null);
-              }}
-              autoFocus
-              onClick={(e) => e.stopPropagation()}
-            />
-          ) : (
-            <span className="flex-1 text-sm truncate">{nb.name}</span>
-          )}
-
-          <span className="text-xs text-slate-400 dark:text-slate-500">{nb._count.notes}</span>
-
-          <div className="relative">
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setContextMenuId(contextMenuId === nb.id ? null : nb.id);
-              }}
-              className="p-0.5 opacity-0 group-hover:opacity-100 hover:bg-slate-300 dark:hover:bg-slate-700 rounded transition-opacity"
-            >
-              <MoreHorizontal className="w-3.5 h-3.5" />
-            </button>
-
-            {contextMenuId === nb.id && (
-              <div className="absolute right-0 top-6 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[140px]">
-                <button
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleStartRename(nb);
-                  }}
-                >
-                  <Edit3 className="w-3.5 h-3.5" /> Rename
-                </button>
-                <button
-                  className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-500 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(nb.id);
-                  }}
-                >
-                  <Trash2 className="w-3.5 h-3.5" /> Delete
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {hasChildren && isExpanded && children.map((c: Notebook) => renderNotebook(c, depth + 1))}
-      </div>
-    );
-  }
+  const isDragging = !!activeItemType;
 
   return (
     <div className="h-full flex flex-col bg-slate-100 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
@@ -209,8 +119,37 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
       </div>
 
       {/* Notebook list */}
-      <div className="flex-1 overflow-y-auto p-2 space-y-0.5">
-        {rootNotebooks.map((nb: Notebook) => renderNotebook(nb))}
+      <div
+        className="flex-1 overflow-y-auto p-2 space-y-0.5"
+        role="tree"
+        aria-label="Notebooks"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
+      >
+        {flatNodes.map((node) => (
+          <SidebarNotebookNode
+            key={node.id}
+            node={node}
+            isSelected={node.id === selectedNotebookId}
+            isFocused={node.id === focusedId}
+            isDropTarget={node.id === overId}
+            editingId={editingId}
+            editName={editName}
+            contextMenuId={contextMenuId}
+            onSelect={onSelectNotebook}
+            onToggleExpand={toggleExpand}
+            onStartRename={handleStartRename}
+            onRename={handleRename}
+            onCancelRename={() => setEditingId(null)}
+            onDelete={handleDelete}
+            onContextMenu={setContextMenuId}
+            onEditNameChange={setEditName}
+            onClose={onClose}
+          />
+        ))}
+
+        {isDragging && activeItemType === 'notebook' && <SidebarDropRoot />}
 
         {notebooks.length === 0 && (
           <p className="text-sm text-slate-500 text-center py-8">

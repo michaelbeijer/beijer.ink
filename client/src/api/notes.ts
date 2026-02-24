@@ -32,6 +32,11 @@ export async function deleteNote(id: string): Promise<void> {
   await api.delete(`/notes/${id}`);
 }
 
+export async function moveNote(id: string, notebookId: string): Promise<Note> {
+  const { data } = await api.patch<Note>(`/notes/${id}/move`, { notebookId });
+  return data;
+}
+
 export async function setNoteTags(noteId: string, tagIds: string[]): Promise<Note> {
   const { data } = await api.put<Note>(`/notes/${noteId}/tags`, { tagIds });
   return data;

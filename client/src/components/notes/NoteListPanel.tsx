@@ -1,8 +1,90 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDraggable } from '@dnd-kit/core';
 import { Plus, FileText } from 'lucide-react';
 import { getNotesByNotebook, createNote } from '../../api/notes';
 import { getPreview } from '../../utils/stripHtml';
+import { useListKeyboardNav } from '../../hooks/useListKeyboardNav';
 import type { NoteSummary } from '../../types/note';
+
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  }
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return `${diffDays}d ago`;
+  return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
+interface DraggableNoteItemProps {
+  note: NoteSummary;
+  isSelected: boolean;
+  isFocused: boolean;
+  onSelect: (id: string) => void;
+}
+
+function DraggableNoteItem({ note, isSelected, isFocused, onSelect }: DraggableNoteItemProps) {
+  const {
+    setNodeRef,
+    attributes,
+    listeners,
+    isDragging,
+  } = useDraggable({
+    id: `note-${note.id}`,
+    data: { type: 'note', item: note },
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      id={`listitem-${note.id}`}
+      {...attributes}
+      {...listeners}
+      role="option"
+      aria-selected={isSelected}
+      onClick={() => onSelect(note.id)}
+      className={`w-full text-left px-4 py-3 border-b border-slate-100 dark:border-slate-800/50 transition-colors cursor-pointer ${
+        isSelected
+          ? 'bg-blue-50 dark:bg-blue-600/10 border-l-2 border-l-blue-500'
+          : 'hover:bg-slate-50 dark:hover:bg-slate-900'
+      } ${isFocused ? 'outline outline-2 outline-blue-500 outline-offset-[-2px]' : ''} ${
+        isDragging ? 'opacity-30' : ''
+      }`}
+    >
+      <div className="flex items-start gap-2">
+        <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
+        <div className="flex-1 min-w-0">
+          <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">{note.title}</h3>
+          <p className="text-xs text-slate-500 mt-1 line-clamp-2">
+            {getPreview(note.plainText, 100) || 'Empty note'}
+          </p>
+          <div className="flex items-center gap-2 mt-1.5">
+            <span className="text-xs text-slate-400 dark:text-slate-600">{formatDate(note.updatedAt)}</span>
+            {note.tags.length > 0 && (
+              <div className="flex gap-1">
+                {note.tags.slice(0, 2).map((nt) => (
+                  <span
+                    key={nt.tagId}
+                    className="text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
+                  >
+                    {nt.tag.name}
+                  </span>
+                ))}
+                {note.tags.length > 2 && (
+                  <span className="text-xs text-slate-400 dark:text-slate-600">+{note.tags.length - 2}</span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface NoteListPanelProps {
   notebookId: string | null;
@@ -19,6 +101,11 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
     enabled: !!notebookId,
   });
 
+  const { focusedId, handleKeyDown, handleFocus } = useListKeyboardNav({
+    items: notes,
+    onSelect: onSelectNote,
+  });
+
   const createMutation = useMutation({
     mutationFn: createNote,
     onSuccess: (note) => {
@@ -31,20 +118,6 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
   function handleCreate() {
     if (!notebookId) return;
     createMutation.mutate({ notebookId });
-  }
-
-  function formatDate(dateStr: string) {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-    if (diffDays === 0) {
-      return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    }
-    if (diffDays === 1) return 'Yesterday';
-    if (diffDays < 7) return `${diffDays}d ago`;
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   }
 
   if (!notebookId) {
@@ -72,45 +145,21 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
       </div>
 
       {/* Note list */}
-      <div className="flex-1 overflow-y-auto">
+      <div
+        className="flex-1 overflow-y-auto"
+        role="listbox"
+        tabIndex={0}
+        onKeyDown={handleKeyDown}
+        onFocus={handleFocus}
+      >
         {notes.map((note: NoteSummary) => (
-          <button
+          <DraggableNoteItem
             key={note.id}
-            onClick={() => onSelectNote(note.id)}
-            className={`w-full text-left px-4 py-3 border-b border-slate-100 dark:border-slate-800/50 transition-colors ${
-              note.id === selectedNoteId
-                ? 'bg-blue-50 dark:bg-blue-600/10 border-l-2 border-l-blue-500'
-                : 'hover:bg-slate-50 dark:hover:bg-slate-900'
-            }`}
-          >
-            <div className="flex items-start gap-2">
-              <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">{note.title}</h3>
-                <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-                  {getPreview(note.plainText, 100) || 'Empty note'}
-                </p>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-xs text-slate-400 dark:text-slate-600">{formatDate(note.updatedAt)}</span>
-                  {note.tags.length > 0 && (
-                    <div className="flex gap-1">
-                      {note.tags.slice(0, 2).map((nt) => (
-                        <span
-                          key={nt.tagId}
-                          className="text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                        >
-                          {nt.tag.name}
-                        </span>
-                      ))}
-                      {note.tags.length > 2 && (
-                        <span className="text-xs text-slate-400 dark:text-slate-600">+{note.tags.length - 2}</span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </button>
+            note={note}
+            isSelected={note.id === selectedNoteId}
+            isFocused={note.id === focusedId}
+            onSelect={onSelectNote}
+          />
         ))}
 
         {notes.length === 0 && (
