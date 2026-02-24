@@ -48,8 +48,8 @@ function ToolbarButton({
       title={title}
       className={`p-1.5 rounded transition-colors ${
         isActive
-          ? 'bg-blue-600/30 text-blue-400'
-          : 'text-slate-400 hover:text-white hover:bg-slate-800'
+          ? 'bg-blue-600/30 text-blue-600 dark:text-blue-400'
+          : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800'
       }`}
     >
       {children}
@@ -58,7 +58,7 @@ function ToolbarButton({
 }
 
 function Divider() {
-  return <div className="w-px h-5 bg-slate-700 mx-1" />;
+  return <div className="w-px h-5 bg-slate-300 dark:bg-slate-700 mx-1" />;
 }
 
 export function EditorToolbar({ editor, onToggleSearch }: EditorToolbarProps) {
@@ -103,7 +103,7 @@ export function EditorToolbar({ editor, onToggleSearch }: EditorToolbarProps) {
   }
 
   return (
-    <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-slate-800 bg-slate-900/50">
+    <div className="flex flex-wrap items-center gap-0.5 px-2 py-1.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
       <ToolbarButton onClick={() => editor.chain().focus().undo().run()} title="Undo">
         <Undo className={iconSize} />
       </ToolbarButton>

@@ -7,7 +7,23 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.1.0**
+Current Version: **0.2.0**
+
+---
+
+## [0.2.0] — 2026-02-24
+
+### Added
+- Light mode theme with clean white/slate color palette
+- Theme toggle button in sidebar footer (Sun/Moon icon) to switch between light and dark mode
+- Theme preference persisted to localStorage across sessions
+- Tailwind CSS 4 `dark:` variant support via custom selector strategy
+
+### Changed
+- All 11 UI components updated with dual light/dark theme classes
+- Custom CSS (code blocks, tables, blockquotes, links, scrollbars) now adapts to active theme
+- Editor prose styling switches between `prose` (light) and `prose-invert` (dark) automatically
+- Default theme remains dark mode for existing users
 
 ---
 

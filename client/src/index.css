@@ -2,6 +2,8 @@
 
 @plugin "@tailwindcss/typography";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* TipTap editor styles */
 .tiptap {
   outline: none;
@@ -26,15 +28,24 @@
 
 .tiptap td,
 .tiptap th {
-  border: 1px solid #334155;
+  border: 1px solid #d1d5db;
   padding: 0.5rem 0.75rem;
   min-width: 100px;
   vertical-align: top;
 }
 
+.dark .tiptap td,
+.dark .tiptap th {
+  border-color: #334155;
+}
+
 .tiptap th {
-  background-color: #1e293b;
+  background-color: #f1f5f9;
   font-weight: 600;
+}
+
+.dark .tiptap th {
+  background-color: #1e293b;
 }
 
 .tiptap .selectedCell {
@@ -138,30 +149,46 @@
 
 /* Code block */
 .tiptap pre {
-  background-color: #1e293b;
+  background-color: #f1f5f9;
   border-radius: 0.5rem;
   padding: 1rem;
   overflow-x: auto;
 }
 
+.dark .tiptap pre {
+  background-color: #1e293b;
+}
+
 .tiptap pre code {
-  color: #e2e8f0;
+  color: #334155;
   font-family: ui-monospace, monospace;
   font-size: 0.875rem;
+}
+
+.dark .tiptap pre code {
+  color: #e2e8f0;
 }
 
 /* Blockquote */
 .tiptap blockquote {
   border-left: 3px solid #3b82f6;
   padding-left: 1rem;
+  color: #64748b;
+}
+
+.dark .tiptap blockquote {
   color: #94a3b8;
 }
 
 /* Links */
 .tiptap a {
-  color: #60a5fa;
+  color: #2563eb;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.dark .tiptap a {
+  color: #60a5fa;
 }
 
 /* Scrollbar */
@@ -171,14 +198,29 @@
 }
 
 ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.dark ::-webkit-scrollbar-track,
+.dark::-webkit-scrollbar-track {
   background: #0f172a;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #334155;
+  background: #cbd5e1;
   border-radius: 4px;
 }
 
+.dark ::-webkit-scrollbar-thumb,
+.dark::-webkit-scrollbar-thumb {
+  background: #334155;
+}
+
 ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover,
+.dark::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }

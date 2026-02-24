@@ -28,6 +28,7 @@ A personal note-taking web app with rich WYSIWYG editing, full-text search, and 
 - **Tags** — Color-coded tags with autocomplete picker
 - **Auto-save** — 1-second debounce, saves in the background
 - **Responsive layout** — 3-column desktop, 2-column tablet, single-column mobile with bottom navigation
+- **Light/Dark mode** — Toggle between light and dark themes, preference saved across sessions
 - **PWA** — Installable on Android via "Add to Home Screen"
 
 ## Project Structure

@@ -57,7 +57,7 @@ export function AppShell() {
   // Desktop: 3-column layout
   if (isDesktop) {
     return (
-      <div className="h-screen flex bg-slate-950">
+      <div className="h-screen flex bg-white dark:bg-slate-950">
         {/* Sidebar */}
         <div className="w-60 shrink-0">
           <Sidebar
@@ -78,14 +78,14 @@ export function AppShell() {
         {/* Editor */}
         <div className="flex-1 min-w-0 flex flex-col">
           {/* Desktop search bar */}
-          <div className="flex items-center px-4 py-2 bg-slate-900 border-b border-slate-800">
+          <div className="flex items-center px-4 py-2 bg-slate-50 dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800">
             <button
               onClick={handleOpenSearch}
-              className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-slate-500 hover:border-slate-600 transition-colors"
+              className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-500 hover:border-slate-400 dark:hover:border-slate-600 transition-colors"
             >
               <Search className="w-4 h-4" />
               <span>Search all notes...</span>
-              <kbd className="ml-4 text-xs bg-slate-700 px-1 py-0.5 rounded">Ctrl+K</kbd>
+              <kbd className="ml-4 text-xs bg-slate-200 dark:bg-slate-700 px-1 py-0.5 rounded">Ctrl+K</kbd>
             </button>
           </div>
 
@@ -105,7 +105,7 @@ export function AppShell() {
 
   // Mobile / Tablet
   return (
-    <div className="h-screen flex flex-col bg-slate-950">
+    <div className="h-screen flex flex-col bg-white dark:bg-slate-950">
       <TopBar
         onOpenSearch={handleOpenSearch}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}

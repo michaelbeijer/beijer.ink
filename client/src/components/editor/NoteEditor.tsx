@@ -191,23 +191,23 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
 
   if (!noteId) {
     return (
-      <div className="h-full flex items-center justify-center bg-slate-950">
+      <div className="h-full flex items-center justify-center bg-white dark:bg-slate-950">
         <p className="text-slate-500">Select or create a note to start writing</p>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-slate-950">
+    <div className="h-full flex flex-col bg-white dark:bg-slate-950">
       {/* Title + actions */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-800">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
         <input
           type="text"
           value={title}
           onChange={(e) => handleTitleChange(e.target.value)}
           onBlur={handleTitleBlur}
           placeholder="Note title..."
-          className="flex-1 bg-transparent text-xl font-semibold text-white placeholder-slate-600 focus:outline-none"
+          className="flex-1 bg-transparent text-xl font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none"
         />
         <button
           onClick={() => {
@@ -215,7 +215,7 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
               pinMutation.mutate({ id: noteId, isPinned: !note.isPinned });
             }
           }}
-          className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded transition-colors"
+          className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
           title={note?.isPinned ? 'Unpin' : 'Pin'}
         >
           {note?.isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
@@ -226,7 +226,7 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
               deleteMutation.mutate(noteId);
             }
           }}
-          className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-800 rounded transition-colors"
+          className="p-1.5 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
           title="Delete note"
         >
           <Trash2 className="w-4 h-4" />
@@ -235,7 +235,7 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
 
       {/* Tags */}
       {noteId && (
-        <div className="px-4 py-1.5 border-b border-slate-800/50">
+        <div className="px-4 py-1.5 border-b border-slate-200/50 dark:border-slate-800/50">
           <TagPicker
             noteId={noteId}
             currentTags={note?.tags?.map((nt) => nt.tag) || []}
@@ -254,12 +254,12 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
       {/* Editor content */}
       <div className="flex-1 overflow-y-auto">
         {editor && <TableMenu editor={editor} />}
-        <EditorContent editor={editor} className="tiptap prose prose-invert max-w-none" />
+        <EditorContent editor={editor} className="tiptap prose dark:prose-invert max-w-none" />
       </div>
 
       {/* Status bar */}
       {editor && (
-        <div className="flex items-center justify-between px-4 py-1 border-t border-slate-800 text-xs text-slate-600">
+        <div className="flex items-center justify-between px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">
           <span>{editor.storage.characterCount?.characters()} characters</span>
           <span>{editor.storage.characterCount?.words()} words</span>
         </div>

@@ -30,8 +30,8 @@ function MenuButton({
       title={title}
       className={`p-1.5 rounded text-xs transition-colors ${
         variant === 'danger'
-          ? 'text-red-400 hover:bg-red-500/20'
-          : 'text-slate-300 hover:bg-slate-700'
+          ? 'text-red-500 dark:text-red-400 hover:bg-red-500/20'
+          : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
       }`}
     >
       {children}
@@ -47,7 +47,7 @@ export function TableMenu({ editor }: TableMenuProps) {
       editor={editor}
       tippyOptions={{ duration: 100, placement: 'top' }}
       shouldShow={({ editor: e }) => e.isActive('table')}
-      className="flex items-center gap-0.5 bg-slate-800 border border-slate-700 rounded-lg shadow-xl p-1"
+      className="flex items-center gap-0.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl p-1"
     >
       <MenuButton
         onClick={() => editor.chain().focus().addRowBefore().run()}
@@ -77,7 +77,7 @@ export function TableMenu({ editor }: TableMenuProps) {
         </div>
       </MenuButton>
 
-      <div className="w-px h-4 bg-slate-700 mx-0.5" />
+      <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
       <MenuButton
         onClick={() => editor.chain().focus().addColumnBefore().run()}
@@ -107,7 +107,7 @@ export function TableMenu({ editor }: TableMenuProps) {
         </div>
       </MenuButton>
 
-      <div className="w-px h-4 bg-slate-700 mx-0.5" />
+      <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
       <MenuButton
         onClick={() => editor.chain().focus().mergeCells().run()}
@@ -128,7 +128,7 @@ export function TableMenu({ editor }: TableMenuProps) {
         <span className="text-[10px] font-bold">H</span>
       </MenuButton>
 
-      <div className="w-px h-4 bg-slate-700 mx-0.5" />
+      <div className="w-px h-4 bg-slate-200 dark:bg-slate-700 mx-0.5" />
 
       <MenuButton
         onClick={() => editor.chain().focus().deleteTable().run()}
