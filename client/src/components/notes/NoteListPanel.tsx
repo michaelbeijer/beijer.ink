@@ -109,23 +109,47 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
 
   const [creating, setCreating] = useState(false);
 
-  async function handleCreate() {
+  function handleCreate() {
     if (!notebookId || creating) return;
     setCreating(true);
-    try {
-      const note = await createNote({ notebookId });
-      // Directly inject into the cache for immediate UI update
-      queryClient.setQueryData<NoteSummary[]>(
-        ['notes', notebookId],
-        (old) => [note as unknown as NoteSummary, ...(old || [])]
-      );
-      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
-      onSelectNote(note.id);
-    } catch {
-      // API call failed
-    } finally {
-      setCreating(false);
-    }
+    const nbId = notebookId;
+
+    // Optimistic: add placeholder to the list immediately (synchronous)
+    const tempId = 'temp-' + Date.now();
+    queryClient.setQueryData<NoteSummary[]>(
+      ['notes', nbId],
+      (old) => [{
+        id: tempId,
+        title: 'Untitled',
+        plainText: '',
+        isPinned: false,
+        sortOrder: 0,
+        updatedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        tags: [],
+      }, ...(old || [])]
+    );
+
+    // Then create on the server and swap temp for real note
+    createNote({ notebookId: nbId })
+      .then((note) => {
+        queryClient.setQueryData<NoteSummary[]>(
+          ['notes', nbId],
+          (old) => (old || []).map((n) =>
+            n.id === tempId ? (note as unknown as NoteSummary) : n
+          )
+        );
+        queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+        onSelectNote(note.id);
+      })
+      .catch(() => {
+        // Remove placeholder on failure
+        queryClient.setQueryData<NoteSummary[]>(
+          ['notes', nbId],
+          (old) => (old || []).filter((n) => n.id !== tempId)
+        );
+      })
+      .finally(() => setCreating(false));
   }
 
   if (!notebookId) {
