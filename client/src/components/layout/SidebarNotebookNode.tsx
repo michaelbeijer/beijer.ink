@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useDraggable, useDroppable } from '@dnd-kit/core';
 import {
   ChevronRight,
@@ -65,12 +66,22 @@ export function SidebarNotebookNode({
     data: { type: 'notebook', item: nb },
   });
 
+  const mergedRef = useCallback(
+    (node: HTMLElement | null) => {
+      setDropRef(node);
+      setDragRef(node);
+    },
+    [setDropRef, setDragRef]
+  );
+
   const showDropHighlight = isDropTarget || isOver;
 
   return (
     <div
-      ref={setDropRef}
+      ref={mergedRef}
       id={`treeitem-${nb.id}`}
+      {...attributes}
+      {...listeners}
       role="treeitem"
       aria-level={node.depth + 1}
       aria-expanded={node.hasChildren ? node.isExpanded : undefined}
@@ -92,6 +103,7 @@ export function SidebarNotebookNode({
     >
       {node.hasChildren ? (
         <button
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             onToggleExpand(nb.id);
@@ -108,9 +120,7 @@ export function SidebarNotebookNode({
         <span className="w-4.5" />
       )}
 
-      <span ref={setDragRef} {...attributes} {...listeners} className="flex items-center">
-        <Folder className="w-4 h-4 shrink-0" />
-      </span>
+      <Folder className="w-4 h-4 shrink-0" />
 
       {isEditing ? (
         <input
@@ -124,6 +134,7 @@ export function SidebarNotebookNode({
           }}
           autoFocus
           onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
         />
       ) : (
         <span className="flex-1 text-sm truncate">{nb.name}</span>
@@ -133,6 +144,7 @@ export function SidebarNotebookNode({
 
       <div className="relative">
         <button
+          onPointerDown={(e) => e.stopPropagation()}
           onClick={(e) => {
             e.stopPropagation();
             onContextMenu(contextMenuId === nb.id ? null : nb.id);
