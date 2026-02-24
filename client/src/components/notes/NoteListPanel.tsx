@@ -114,6 +114,9 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
     setCreating(true);
     const nbId = notebookId;
 
+    // Cancel any in-flight refetches so they don't overwrite our optimistic update
+    queryClient.cancelQueries({ queryKey: ['notes', nbId] });
+
     // Optimistic: add placeholder to the list immediately (synchronous)
     const tempId = 'temp-' + Date.now();
     queryClient.setQueryData<NoteSummary[]>(
@@ -143,11 +146,8 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
         onSelectNote(note.id);
       })
       .catch(() => {
-        // Remove placeholder on failure
-        queryClient.setQueryData<NoteSummary[]>(
-          ['notes', nbId],
-          (old) => (old || []).filter((n) => n.id !== tempId)
-        );
+        // API failed — refetch to get accurate server state
+        queryClient.invalidateQueries({ queryKey: ['notes', nbId] });
       })
       .finally(() => setCreating(false));
   }
