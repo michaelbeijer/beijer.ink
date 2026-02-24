@@ -7,7 +7,34 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.3.0**
+Current Version: **0.4.0**
+
+---
+
+## [0.4.0] — 2026-02-24
+
+### Added
+- Drag-and-drop notebooks into other notebooks to create nested folder hierarchies
+- Drag notebooks to root drop zone to un-nest them back to top level
+- Drag notes from the note list onto sidebar notebooks to move between notebooks
+- Full keyboard navigation for notebook tree (Arrow keys to move, Left/Right to collapse/expand, Home/End to jump, Enter to select)
+- Full keyboard navigation for note list (Arrow keys to move, Home/End to jump, Enter to select)
+- Touch drag support for Android (press-and-hold 200ms to start dragging)
+- Drag overlay preview showing notebook/note name while dragging
+- Circular reparenting prevention (can't drop a notebook into its own descendant)
+
+### Fixed
+- Auto-save stale closure: editor body edits no longer overwrite the title back to its initial value
+- Content now reliably persists when switching between notes (pending saves are flushed on note switch)
+- `setContent` during note loading no longer triggers spurious auto-saves to the wrong note
+- Title changes in the editor now update the note list instantly (optimistic cache update)
+- Title-only changes are no longer silently dropped by the debounce dedup logic
+- New note creation appears instantly via optimistic update (no page refresh needed)
+- Stuck browser focus ring no longer appears on notebooks and notes after clicking
+
+### Changed
+- Sidebar notebook tree refactored from recursive rendering to flat list for dnd-kit hook compatibility
+- Keyboard arrow navigation immediately selects the focused item (no separate focus vs selection)
 
 ---
 

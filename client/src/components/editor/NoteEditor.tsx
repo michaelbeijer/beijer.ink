@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import StarterKit from '@tiptap/starter-kit';
@@ -22,6 +22,7 @@ import Superscript from '@tiptap/extension-superscript';
 import { Trash2, Pin, PinOff } from 'lucide-react';
 
 import { getNoteById, updateNote, deleteNote } from '../../api/notes';
+import type { NoteSummary } from '../../types/note';
 import { uploadImage } from '../../api/images';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { EditorToolbar } from './EditorToolbar';
@@ -42,6 +43,13 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
   const [showSearch, setShowSearch] = useState(false);
   const [title, setTitle] = useState('');
   const { save, saveNow } = useAutoSave(noteId);
+
+  // Refs to avoid stale closures in useEditor's onUpdate
+  const titleRef = useRef(title);
+  titleRef.current = title;
+  const saveRef = useRef(save);
+  saveRef.current = save;
+  const isLoadingRef = useRef(false);
 
   const { data: note } = useQuery({
     queryKey: ['note', noteId],
@@ -94,7 +102,8 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
     ],
     content: '',
     onUpdate: ({ editor: e }) => {
-      save(e.getHTML(), title);
+      if (isLoadingRef.current) return;
+      saveRef.current(e.getHTML(), titleRef.current);
     },
     editorProps: {
       handleDrop: (view, event) => {
@@ -156,8 +165,10 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
   // Load note content into editor
   useEffect(() => {
     if (note && editor) {
+      isLoadingRef.current = true;
       setTitle(note.title);
       editor.commands.setContent(note.content || '');
+      isLoadingRef.current = false;
     }
   }, [note, editor]);
 
@@ -176,11 +187,16 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
   const handleTitleChange = useCallback(
     (newTitle: string) => {
       setTitle(newTitle);
+      // Optimistically update the title in the note list immediately
+      queryClient.setQueriesData<NoteSummary[]>(
+        { queryKey: ['notes'] },
+        (old) => old?.map((n) => n.id === noteId ? { ...n, title: newTitle } : n)
+      );
       if (noteId && editor) {
         save(editor.getHTML(), newTitle);
       }
     },
-    [noteId, editor, save]
+    [noteId, editor, save, queryClient]
   );
 
   const handleTitleBlur = useCallback(async () => {
