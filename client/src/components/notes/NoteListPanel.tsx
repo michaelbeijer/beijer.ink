@@ -110,15 +110,16 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
     mutationFn: createNote,
   });
 
-  function handleCreate() {
+  async function handleCreate() {
     if (!notebookId) return;
-    createMutation.mutate({ notebookId }, {
-      onSuccess: (note) => {
-        queryClient.invalidateQueries({ queryKey: ['notes'] });
-        queryClient.invalidateQueries({ queryKey: ['notebooks'] });
-        onSelectNote(note.id);
-      },
-    });
+    try {
+      const note = await createMutation.mutateAsync({ notebookId });
+      await queryClient.refetchQueries({ queryKey: ['notes'] });
+      await queryClient.refetchQueries({ queryKey: ['notebooks'] });
+      onSelectNote(note.id);
+    } catch {
+      // mutation failed silently
+    }
   }
 
   if (!notebookId) {

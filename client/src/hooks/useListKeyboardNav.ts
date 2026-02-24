@@ -14,19 +14,23 @@ export function useListKeyboardNav({ items, onSelect }: UseListKeyboardNavOption
 
       const currentIndex = focusedId ? items.findIndex((item) => item.id === focusedId) : -1;
 
+      function moveTo(id: string) {
+        setFocusedId(id);
+        onSelect(id);
+        document.getElementById(`listitem-${id}`)?.scrollIntoView({ block: 'nearest' });
+      }
+
       switch (e.key) {
         case 'ArrowDown': {
           e.preventDefault();
           const next = currentIndex < items.length - 1 ? currentIndex + 1 : 0;
-          setFocusedId(items[next].id);
-          document.getElementById(`listitem-${items[next].id}`)?.scrollIntoView({ block: 'nearest' });
+          moveTo(items[next].id);
           break;
         }
         case 'ArrowUp': {
           e.preventDefault();
           const prev = currentIndex > 0 ? currentIndex - 1 : items.length - 1;
-          setFocusedId(items[prev].id);
-          document.getElementById(`listitem-${items[prev].id}`)?.scrollIntoView({ block: 'nearest' });
+          moveTo(items[prev].id);
           break;
         }
         case 'Enter':
@@ -38,17 +42,14 @@ export function useListKeyboardNav({ items, onSelect }: UseListKeyboardNavOption
         case 'Home': {
           e.preventDefault();
           if (items.length > 0) {
-            setFocusedId(items[0].id);
-            document.getElementById(`listitem-${items[0].id}`)?.scrollIntoView({ block: 'nearest' });
+            moveTo(items[0].id);
           }
           break;
         }
         case 'End': {
           e.preventDefault();
           if (items.length > 0) {
-            const last = items[items.length - 1];
-            setFocusedId(last.id);
-            document.getElementById(`listitem-${last.id}`)?.scrollIntoView({ block: 'nearest' });
+            moveTo(items[items.length - 1].id);
           }
           break;
         }
