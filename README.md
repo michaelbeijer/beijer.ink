@@ -2,6 +2,9 @@
 
 A personal note-taking web app with rich WYSIWYG editing, full-text search, and a clean responsive UI. Built as a single-user app, accessible as a PWA on mobile.
 
+<img width="1424" height="1113" alt="image" src="https://github.com/user-attachments/assets/f3d0ce56-4111-455b-9a12-3840455f45bd" />
+
+
 ## Tech Stack
 
 | Layer | Technology |
