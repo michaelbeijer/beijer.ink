@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import {
   useSensors,
   useSensor,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   KeyboardSensor,
   type DragStartEvent,
   type DragOverEvent,
@@ -39,7 +40,8 @@ export function useDndNotebooks(onExpandNotebook: (id: string) => void) {
   const [overId, setOverId] = useState<string | null>(null);
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(MouseSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
     useSensor(KeyboardSensor)
   );
 

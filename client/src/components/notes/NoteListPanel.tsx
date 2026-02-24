@@ -1,4 +1,5 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useDraggable } from '@dnd-kit/core';
 import { Plus, FileText } from 'lucide-react';
 import { getNotesByNotebook, createNote } from '../../api/notes';
@@ -106,19 +107,24 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
     onSelect: onSelectNote,
   });
 
-  const createMutation = useMutation({
-    mutationFn: createNote,
-  });
+  const [creating, setCreating] = useState(false);
 
   async function handleCreate() {
-    if (!notebookId) return;
+    if (!notebookId || creating) return;
+    setCreating(true);
     try {
-      const note = await createMutation.mutateAsync({ notebookId });
-      await queryClient.refetchQueries({ queryKey: ['notes'] });
-      await queryClient.refetchQueries({ queryKey: ['notebooks'] });
+      const note = await createNote({ notebookId });
+      // Directly inject into the cache for immediate UI update
+      queryClient.setQueryData<NoteSummary[]>(
+        ['notes', notebookId],
+        (old) => [note as unknown as NoteSummary, ...(old || [])]
+      );
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
       onSelectNote(note.id);
     } catch {
-      // mutation failed silently
+      // API call failed
+    } finally {
+      setCreating(false);
     }
   }
 
