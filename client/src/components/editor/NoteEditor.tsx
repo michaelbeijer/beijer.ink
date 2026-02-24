@@ -30,6 +30,7 @@ import { SearchBar } from './SearchBar';
 import { ResizableImage } from './extensions/resizable-image';
 import { SearchAndReplace } from './extensions/search-and-replace';
 import { TagPicker } from '../tags/TagPicker';
+import { Scratchpad } from '../scratchpad/Scratchpad';
 
 interface NoteEditorProps {
   noteId: string | null;
@@ -190,11 +191,7 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
   }, [noteId, editor, title, saveNow, queryClient]);
 
   if (!noteId) {
-    return (
-      <div className="h-full flex items-center justify-center bg-white dark:bg-slate-950">
-        <p className="text-slate-500">Select or create a note to start writing</p>
-      </div>
-    );
+    return <Scratchpad />;
   }
 
   return (

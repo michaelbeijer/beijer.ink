@@ -17,7 +17,7 @@ export function AppShell() {
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
-  const [mobileView, setMobileView] = useState<MobileView>('sidebar');
+  const [mobileView, setMobileView] = useState<MobileView>('editor');
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const isDesktop = useMediaQuery('(min-width: 1024px)');

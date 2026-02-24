@@ -8,11 +8,24 @@ datasource db {
 }
 
 model User {
-  id           String   @id @default("admin")
-  passwordHash String   @map("password_hash")
-  createdAt    DateTime @default(now()) @map("created_at")
+  id           String       @id @default("admin")
+  passwordHash String       @map("password_hash")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  scratchpads  Scratchpad[]
 
   @@map("users")
+}
+
+model Scratchpad {
+  id        String   @id @default("default")
+  userId    String   @map("user_id")
+  content   String   @default("")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@unique([userId])
+  @@map("scratchpads")
 }
 
 model Notebook {

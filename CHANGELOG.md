@@ -7,7 +7,21 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.2.1**
+Current Version: **0.3.0**
+
+---
+
+## [0.3.0] — 2026-02-24
+
+### Added
+- Scratchpad: instant-access plain textarea shown on app load when no note is selected
+- Auto-saves scratchpad content with 1-second debounce, persisted in PostgreSQL
+- New API endpoints: `GET /api/scratchpad` and `PUT /api/scratchpad`
+- Mobile bottom nav shows "Scratchpad" tab label when no note is open
+
+### Changed
+- Mobile default view now opens to scratchpad instead of notebook sidebar
+- Editor tab in mobile nav is always enabled (shows scratchpad or note editor)
 
 ---
 

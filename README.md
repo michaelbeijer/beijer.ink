@@ -26,6 +26,7 @@ A personal note-taking web app with rich WYSIWYG editing, full-text search, and 
 - **In-document search** — Ctrl+F find-and-replace within the current note
 - **Notebooks** — Organize notes in a tree of notebooks with drag-and-drop
 - **Tags** — Color-coded tags with autocomplete picker
+- **Scratchpad** — Instant-access textarea on app load for quick jotting; auto-saved and always available
 - **Auto-save** — 1-second debounce, saves in the background
 - **Responsive layout** — 3-column desktop, 2-column tablet, single-column mobile with bottom navigation
 - **Light/Dark mode** — Toggle between light and dark themes, preference saved across sessions
@@ -135,6 +136,8 @@ All endpoints under `/api`, JWT-protected except login.
 | `POST` | `/api/tags` | Create tag |
 | `PATCH` | `/api/tags/:id` | Update tag |
 | `DELETE` | `/api/tags/:id` | Delete tag |
+| `GET` | `/api/scratchpad` | Get scratchpad content |
+| `PUT` | `/api/scratchpad` | Update scratchpad content |
 | `GET` | `/api/search?q=...` | Full-text search with highlighted snippets |
 | `POST` | `/api/images/upload` | Upload image to R2 |
 | `DELETE` | `/api/images/:id` | Delete image |
