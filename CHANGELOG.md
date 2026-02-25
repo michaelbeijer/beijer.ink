@@ -7,7 +7,20 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.5.0**
+Current Version: **0.5.1**
+
+---
+
+## [0.5.1] — 2026-02-25
+
+### Changed
+- Notebook drag-and-drop removed (was unreliable); notebooks are now moved via right-click context menu "Move to" submenu
+- Sidebar restyled to be more Obsidian-like: tighter spacing, subtler selection, folder open/closed icons, muted colors
+- Context menu now includes "New sub-notebook" option to create child notebooks inline
+
+### Removed
+- Notebook dragging (useDraggable) and root drop zone; note-to-notebook drag-and-drop is preserved
+- `SidebarDropRoot` component
 
 ---
 
