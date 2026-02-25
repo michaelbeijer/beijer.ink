@@ -7,7 +7,29 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.4.0**
+Current Version: **0.5.0**
+
+---
+
+## [0.5.0] — 2026-02-25
+
+### Changed
+- Editor replaced: TipTap WYSIWYG removed, replaced with plain `<textarea>` and monospace font
+- First line of note content is now the title (no separate title field)
+- Title auto-derived on server from first line of content
+- Note list preview shows lines 2+ of content (line 1 is the title)
+- Tab key inserts 2 spaces instead of moving focus
+- Search uses inline tsvector on content (no stored search_vector column)
+
+### Removed
+- TipTap editor and all 22 extension packages
+- Formatting toolbar, table menu, find & replace, image resize
+- Tag system (TagPicker, TagBadge, Tag/NoteTag database tables)
+- Image upload and Cloudflare R2 integration (Image table dropped)
+- `plainText` database column (content is now plain text directly)
+- `@aws-sdk/client-s3`, `html-to-text`, `multer` server packages
+- `@tailwindcss/typography` plugin and ~180 lines of TipTap CSS
+- Client bundle reduced from 860KB to 395KB
 
 ---
 
