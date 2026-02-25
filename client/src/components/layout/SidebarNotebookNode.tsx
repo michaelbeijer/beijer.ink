@@ -1,15 +1,19 @@
-import { useCallback } from 'react';
-import { useDraggable, useDroppable } from '@dnd-kit/core';
+import { useState } from 'react';
+import { useDroppable } from '@dnd-kit/core';
 import {
   ChevronRight,
   ChevronDown,
   Folder,
+  FolderOpen,
   MoreHorizontal,
   Trash2,
   Edit3,
+  FolderInput,
+  FolderPlus,
 } from 'lucide-react';
 import type { FlatTreeNode } from '../../utils/flattenNotebookTree';
 import type { Notebook } from '../../types/notebook';
+import { isDescendant } from '../../utils/isDescendant';
 
 interface SidebarNotebookNodeProps {
   node: FlatTreeNode;
@@ -19,6 +23,7 @@ interface SidebarNotebookNodeProps {
   editingId: string | null;
   editName: string;
   contextMenuId: string | null;
+  notebooks: Notebook[];
   onSelect: (id: string) => void;
   onToggleExpand: (id: string) => void;
   onStartRename: (nb: Notebook) => void;
@@ -27,6 +32,8 @@ interface SidebarNotebookNodeProps {
   onDelete: (id: string) => void;
   onContextMenu: (id: string | null) => void;
   onEditNameChange: (name: string) => void;
+  onMove: (id: string, parentId: string | null) => void;
+  onCreateChild: (parentId: string) => void;
   onClose?: () => void;
 }
 
@@ -38,6 +45,7 @@ export function SidebarNotebookNode({
   editingId,
   editName,
   contextMenuId,
+  notebooks,
   onSelect,
   onToggleExpand,
   onStartRename,
@@ -46,61 +54,63 @@ export function SidebarNotebookNode({
   onDelete,
   onContextMenu,
   onEditNameChange,
+  onMove,
+  onCreateChild,
   onClose,
 }: SidebarNotebookNodeProps) {
   const nb = node.notebook;
   const isEditing = editingId === nb.id;
+  const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
 
-  const { setNodeRef: setDropRef, isOver } = useDroppable({
+  const { setNodeRef, isOver } = useDroppable({
     id: nb.id,
     data: { type: 'notebook', item: nb },
   });
-
-  const {
-    setNodeRef: setDragRef,
-    attributes,
-    listeners,
-    isDragging,
-  } = useDraggable({
-    id: nb.id,
-    data: { type: 'notebook', item: nb },
-  });
-
-  const mergedRef = useCallback(
-    (node: HTMLElement | null) => {
-      setDropRef(node);
-      setDragRef(node);
-    },
-    [setDropRef, setDragRef]
-  );
 
   const showDropHighlight = isDropTarget || isOver;
 
+  // Valid move targets: not self, not descendants of self
+  const moveTargets = notebooks.filter(
+    (target) =>
+      target.id !== nb.id && !isDescendant(notebooks, nb.id, target.id)
+  );
+
+  function handleContextMenu(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    onContextMenu(contextMenuId === nb.id ? null : nb.id);
+  }
+
   return (
     <div
-      ref={mergedRef}
+      ref={setNodeRef}
       id={`treeitem-${nb.id}`}
-      {...attributes}
-      {...listeners}
       role="treeitem"
       aria-level={node.depth + 1}
       aria-expanded={node.hasChildren ? node.isExpanded : undefined}
       aria-selected={isSelected}
-      className={`group flex items-center gap-1 px-2 py-1.5 rounded-md cursor-pointer transition-colors focus:outline-none ${
+      onContextMenu={handleContextMenu}
+      className={`group flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer transition-colors focus:outline-none ${
         showDropHighlight
           ? 'ring-2 ring-blue-500 ring-inset bg-blue-600/10'
           : isSelected
-            ? 'bg-blue-600/20 text-blue-600 dark:text-blue-400'
-            : 'text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800'
-      } ${isFocused ? 'outline outline-2 outline-blue-500 outline-offset-[-2px]' : ''} ${
-        isDragging ? 'opacity-30' : ''
-      }`}
+            ? 'bg-slate-200/70 dark:bg-slate-800/70 text-slate-900 dark:text-white'
+            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/40'
+      } ${isFocused ? 'outline outline-2 outline-blue-500 outline-offset-[-2px]' : ''}`}
       style={{ paddingLeft: `${node.depth * 16 + 8}px` }}
       onClick={() => {
         onSelect(nb.id);
         onClose?.();
       }}
     >
+      {/* Indent guide */}
+      {node.depth > 0 && (
+        <span
+          className="absolute left-0 top-0 bottom-0 border-l border-slate-200 dark:border-slate-700/50"
+          style={{ marginLeft: `${(node.depth - 1) * 16 + 16}px` }}
+        />
+      )}
+
       {node.hasChildren ? (
         <button
           onPointerDown={(e) => e.stopPropagation()}
@@ -108,7 +118,7 @@ export function SidebarNotebookNode({
             e.stopPropagation();
             onToggleExpand(nb.id);
           }}
-          className="p-0.5 hover:bg-slate-300 dark:hover:bg-slate-700 rounded"
+          className="p-0.5 rounded text-slate-400 dark:text-slate-500 hover:text-slate-600 dark:hover:text-slate-300"
         >
           {node.isExpanded ? (
             <ChevronDown className="w-3.5 h-3.5" />
@@ -120,7 +130,11 @@ export function SidebarNotebookNode({
         <span className="w-4.5" />
       )}
 
-      <Folder className="w-4 h-4 shrink-0" />
+      {node.hasChildren && node.isExpanded ? (
+        <FolderOpen className="w-4 h-4 shrink-0 text-slate-400 dark:text-slate-500" />
+      ) : (
+        <Folder className="w-4 h-4 shrink-0 text-slate-400 dark:text-slate-500" />
+      )}
 
       {isEditing ? (
         <input
@@ -140,7 +154,9 @@ export function SidebarNotebookNode({
         <span className="flex-1 text-sm truncate">{nb.name}</span>
       )}
 
-      <span className="text-xs text-slate-400 dark:text-slate-500">{nb._count.notes}</span>
+      <span className="text-[10px] text-slate-400 dark:text-slate-600 tabular-nums">
+        {nb._count.notes || ''}
+      </span>
 
       <div className="relative">
         <button
@@ -149,13 +165,13 @@ export function SidebarNotebookNode({
             e.stopPropagation();
             onContextMenu(contextMenuId === nb.id ? null : nb.id);
           }}
-          className="p-0.5 opacity-0 group-hover:opacity-100 hover:bg-slate-300 dark:hover:bg-slate-700 rounded transition-opacity"
+          className="p-0.5 opacity-0 group-hover:opacity-100 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 rounded transition-opacity"
         >
           <MoreHorizontal className="w-3.5 h-3.5" />
         </button>
 
         {contextMenuId === nb.id && (
-          <div className="absolute right-0 top-6 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[140px]">
+          <div className="absolute right-0 top-6 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[160px]">
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
               onClick={(e) => {
@@ -165,6 +181,85 @@ export function SidebarNotebookNode({
             >
               <Edit3 className="w-3.5 h-3.5" /> Rename
             </button>
+
+            {/* Move to submenu */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowMoveSubmenu(true)}
+              onMouseLeave={() => setShowMoveSubmenu(false)}
+            >
+              <button
+                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowMoveSubmenu(!showMoveSubmenu);
+                }}
+              >
+                <FolderInput className="w-3.5 h-3.5" /> Move to
+                <ChevronRight className="w-3 h-3 ml-auto" />
+              </button>
+
+              {showMoveSubmenu && (
+                <div className="absolute left-full top-0 ml-1 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[160px] max-h-64 overflow-y-auto">
+                  {/* Root level option */}
+                  <button
+                    className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
+                      nb.parentId === null
+                        ? 'text-slate-400 dark:text-slate-500'
+                        : 'text-slate-600 dark:text-slate-300'
+                    }`}
+                    disabled={nb.parentId === null}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMove(nb.id, null);
+                      onContextMenu(null);
+                    }}
+                  >
+                    <Folder className="w-3.5 h-3.5" /> Root level
+                    {nb.parentId === null && <span className="text-xs ml-auto">(current)</span>}
+                  </button>
+
+                  {moveTargets.length > 0 && (
+                    <div className="border-t border-slate-100 dark:border-slate-700 my-1" />
+                  )}
+
+                  {moveTargets.map((target) => (
+                    <button
+                      key={target.id}
+                      className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
+                        nb.parentId === target.id
+                          ? 'text-slate-400 dark:text-slate-500'
+                          : 'text-slate-600 dark:text-slate-300'
+                      }`}
+                      disabled={nb.parentId === target.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMove(nb.id, target.id);
+                        onContextMenu(null);
+                      }}
+                    >
+                      <Folder className="w-3.5 h-3.5" />
+                      <span className="truncate">{target.name}</span>
+                      {nb.parentId === target.id && <span className="text-xs ml-auto">(current)</span>}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCreateChild(nb.id);
+                onContextMenu(null);
+              }}
+            >
+              <FolderPlus className="w-3.5 h-3.5" /> New sub-notebook
+            </button>
+
+            <div className="border-t border-slate-100 dark:border-slate-700 my-1" />
+
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-500 dark:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-700"
               onClick={(e) => {

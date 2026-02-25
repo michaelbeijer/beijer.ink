@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
 import { Search } from 'lucide-react';
 import { Sidebar } from './Sidebar';
@@ -16,32 +15,22 @@ import { getNoteById } from '../../api/notes';
 type MobileView = 'sidebar' | 'notes' | 'editor';
 
 export function AppShell() {
-  const queryClient = useQueryClient();
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>('editor');
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [expandNotebookId, setExpandNotebookId] = useState<string | null>(null);
 
   const isDesktop = useMediaQuery('(min-width: 1024px)');
-  const isTablet = useMediaQuery('(min-width: 768px)');
-
-  const handleExpandNotebook = useCallback((id: string) => {
-    setExpandNotebookId(id);
-    // Reset after sidebar picks it up
-    setTimeout(() => setExpandNotebookId(null), 100);
-  }, []);
 
   const {
     sensors,
     activeItem,
-    overId,
     handleDragStart,
     handleDragOver,
     handleDragEnd,
     handleDragCancel,
-  } = useDndNotebooks(handleExpandNotebook);
+  } = useDndNotebooks();
 
   const handleSelectNotebook = useCallback((id: string) => {
     setSelectedNotebookId(id);
@@ -89,8 +78,6 @@ export function AppShell() {
             <Sidebar
               selectedNotebookId={selectedNotebookId}
               onSelectNotebook={handleSelectNotebook}
-              activeItemType={activeItem?.type ?? null}
-              overId={overId}
             />
           </div>
 
@@ -163,8 +150,6 @@ export function AppShell() {
                     setSidebarOpen(false);
                   }}
                   onClose={() => setSidebarOpen(false)}
-                  activeItemType={activeItem?.type ?? null}
-                  overId={overId}
                 />
               </div>
             </>
@@ -174,8 +159,6 @@ export function AppShell() {
             <Sidebar
               selectedNotebookId={selectedNotebookId}
               onSelectNotebook={handleSelectNotebook}
-              activeItemType={activeItem?.type ?? null}
-              overId={overId}
             />
           )}
 

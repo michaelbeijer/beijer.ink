@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { PenLine, FolderPlus, LogOut, Sun, Moon } from 'lucide-react';
 import { getNotebooks, createNotebook, deleteNotebook, updateNotebook } from '../../api/notebooks';
@@ -7,18 +7,15 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { flattenNotebookTree } from '../../utils/flattenNotebookTree';
 import { useTreeKeyboardNav } from '../../hooks/useTreeKeyboardNav';
 import { SidebarNotebookNode } from './SidebarNotebookNode';
-import { SidebarDropRoot } from './SidebarDropRoot';
 import type { Notebook } from '../../types/notebook';
 
 interface SidebarProps {
   selectedNotebookId: string | null;
   onSelectNotebook: (id: string) => void;
   onClose?: () => void;
-  activeItemType?: 'notebook' | 'note' | null;
-  overId?: string | null;
 }
 
-export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeItemType, overId }: SidebarProps) {
+export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: SidebarProps) {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -26,6 +23,7 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [contextMenuId, setContextMenuId] = useState<string | null>(null);
+  const treeRef = useRef<HTMLDivElement>(null);
 
   const { data: notebooks = [] } = useQuery({
     queryKey: ['notebooks'],
@@ -34,7 +32,13 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
 
   const createMutation = useMutation({
     mutationFn: createNotebook,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notebooks'] }),
+    onSuccess: (nb) => {
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+      // Auto-expand parent if created as child
+      if (nb.parentId) {
+        setExpandedIds((prev) => new Set([...prev, nb.parentId!]));
+      }
+    },
   });
 
   const deleteMutation = useMutation({
@@ -47,6 +51,17 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notebooks'] });
       setEditingId(null);
+    },
+  });
+
+  const moveMutation = useMutation({
+    mutationFn: ({ id, parentId }: { id: string; parentId: string | null }) =>
+      updateNotebook(id, { parentId }),
+    onSuccess: (_, { parentId }) => {
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+      if (parentId) {
+        setExpandedIds((prev) => new Set([...prev, parentId]));
+      }
     },
   });
 
@@ -74,8 +89,24 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
     },
   });
 
+  // Close context menu on outside click
+  useEffect(() => {
+    if (!contextMenuId) return;
+    function handleClick(e: MouseEvent) {
+      if (treeRef.current && !treeRef.current.contains(e.target as Node)) {
+        setContextMenuId(null);
+      }
+    }
+    document.addEventListener('pointerdown', handleClick);
+    return () => document.removeEventListener('pointerdown', handleClick);
+  }, [contextMenuId]);
+
   function handleCreate() {
     createMutation.mutate({ name: 'New Notebook' });
+  }
+
+  function handleCreateChild(parentId: string) {
+    createMutation.mutate({ name: 'New Notebook', parentId });
   }
 
   function handleStartRename(nb: Notebook) {
@@ -99,28 +130,31 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
     }
   }
 
-  const isDragging = !!activeItemType;
+  function handleMove(id: string, parentId: string | null) {
+    moveMutation.mutate({ id, parentId });
+  }
 
   return (
-    <div className="h-full flex flex-col bg-slate-100 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+    <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
-          <PenLine className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <span className="font-semibold text-slate-900 dark:text-white">Beijer.ink</span>
+          <PenLine className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+          <span className="font-semibold text-sm text-slate-900 dark:text-white">Beijer.ink</span>
         </div>
         <button
           onClick={handleCreate}
-          className="p-1.5 text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors"
+          className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
           title="New notebook"
         >
           <FolderPlus className="w-4 h-4" />
         </button>
       </div>
 
-      {/* Notebook list */}
+      {/* Notebook tree */}
       <div
-        className="flex-1 overflow-y-auto p-2 space-y-0.5"
+        ref={treeRef}
+        className="flex-1 overflow-y-auto px-1.5 py-1.5"
         role="tree"
         aria-label="Notebooks"
         tabIndex={0}
@@ -133,10 +167,11 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
             node={node}
             isSelected={node.id === selectedNotebookId}
             isFocused={node.id === focusedId}
-            isDropTarget={node.id === overId}
+            isDropTarget={false}
             editingId={editingId}
             editName={editName}
             contextMenuId={contextMenuId}
+            notebooks={notebooks}
             onSelect={onSelectNotebook}
             onToggleExpand={toggleExpand}
             onStartRename={handleStartRename}
@@ -145,11 +180,11 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
             onDelete={handleDelete}
             onContextMenu={setContextMenuId}
             onEditNameChange={setEditName}
+            onMove={handleMove}
+            onCreateChild={handleCreateChild}
             onClose={onClose}
           />
         ))}
-
-        {isDragging && activeItemType === 'notebook' && <SidebarDropRoot />}
 
         {notebooks.length === 0 && (
           <p className="text-sm text-slate-500 text-center py-8">
@@ -163,17 +198,17 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose, activeI
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-2 space-y-0.5">
+      <div className="border-t border-slate-200 dark:border-slate-800 p-1.5">
         <button
           onClick={toggleTheme}
-          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors"
+          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
         </button>
         <button
           onClick={logout}
-          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded-md transition-colors"
+          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
         >
           <LogOut className="w-4 h-4" /> Sign out
         </button>
