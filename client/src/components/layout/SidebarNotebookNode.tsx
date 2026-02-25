@@ -182,28 +182,28 @@ export function SidebarNotebookNode({
               <Edit3 className="w-3.5 h-3.5" /> Rename
             </button>
 
-            {/* Move to submenu */}
-            <div
-              className="relative"
-              onMouseEnter={() => setShowMoveSubmenu(true)}
-              onMouseLeave={() => setShowMoveSubmenu(false)}
+            {/* Move to (inline expandable) */}
+            <button
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                setShowMoveSubmenu(!showMoveSubmenu);
+              }}
             >
-              <button
-                className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowMoveSubmenu(!showMoveSubmenu);
-                }}
-              >
-                <FolderInput className="w-3.5 h-3.5" /> Move to
+              <FolderInput className="w-3.5 h-3.5" /> Move to
+              {showMoveSubmenu ? (
+                <ChevronDown className="w-3 h-3 ml-auto" />
+              ) : (
                 <ChevronRight className="w-3 h-3 ml-auto" />
-              </button>
+              )}
+            </button>
 
-              {showMoveSubmenu && (
-                <div className="absolute left-full top-0 ml-1 z-50 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-xl py-1 min-w-[160px] max-h-64 overflow-y-auto">
+            {showMoveSubmenu && (
+              <div className="border-t border-slate-100 dark:border-slate-700 mx-2 my-0.5" >
+                <div className="max-h-48 overflow-y-auto py-0.5">
                   {/* Root level option */}
                   <button
-                    className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
+                    className={`flex items-center gap-2 w-full pl-5 pr-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
                       nb.parentId === null
                         ? 'text-slate-400 dark:text-slate-500'
                         : 'text-slate-600 dark:text-slate-300'
@@ -215,18 +215,15 @@ export function SidebarNotebookNode({
                       onContextMenu(null);
                     }}
                   >
-                    <Folder className="w-3.5 h-3.5" /> Root level
-                    {nb.parentId === null && <span className="text-xs ml-auto">(current)</span>}
+                    <Folder className="w-3 h-3" />
+                    <span>Root level</span>
+                    {nb.parentId === null && <span className="text-[10px] text-slate-400 ml-auto">(current)</span>}
                   </button>
-
-                  {moveTargets.length > 0 && (
-                    <div className="border-t border-slate-100 dark:border-slate-700 my-1" />
-                  )}
 
                   {moveTargets.map((target) => (
                     <button
                       key={target.id}
-                      className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
+                      className={`flex items-center gap-2 w-full pl-5 pr-3 py-1 text-sm hover:bg-slate-100 dark:hover:bg-slate-700 ${
                         nb.parentId === target.id
                           ? 'text-slate-400 dark:text-slate-500'
                           : 'text-slate-600 dark:text-slate-300'
@@ -238,14 +235,15 @@ export function SidebarNotebookNode({
                         onContextMenu(null);
                       }}
                     >
-                      <Folder className="w-3.5 h-3.5" />
+                      <Folder className="w-3 h-3" />
                       <span className="truncate">{target.name}</span>
-                      {nb.parentId === target.id && <span className="text-xs ml-auto">(current)</span>}
+                      {nb.parentId === target.id && <span className="text-[10px] text-slate-400 ml-auto">(current)</span>}
                     </button>
                   ))}
                 </div>
-              )}
-            </div>
+                <div className="border-t border-slate-100 dark:border-slate-700 mx-0 my-0.5" />
+              </div>
+            )}
 
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
