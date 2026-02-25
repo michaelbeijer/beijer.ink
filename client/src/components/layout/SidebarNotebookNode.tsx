@@ -143,6 +143,7 @@ export function SidebarNotebookNode({
           onChange={(e) => onEditNameChange(e.target.value)}
           onBlur={() => onRename(nb.id)}
           onKeyDown={(e) => {
+            e.stopPropagation();
             if (e.key === 'Enter') onRename(nb.id);
             if (e.key === 'Escape') onCancelRename();
           }}
