@@ -1,36 +1,10 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { useEditor, EditorContent } from '@tiptap/react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import Link from '@tiptap/extension-link';
-import Highlight from '@tiptap/extension-highlight';
-import TextAlign from '@tiptap/extension-text-align';
-import Placeholder from '@tiptap/extension-placeholder';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableHeader from '@tiptap/extension-table-header';
-import TableCell from '@tiptap/extension-table-cell';
-import Typography from '@tiptap/extension-typography';
-import CharacterCount from '@tiptap/extension-character-count';
-import Color from '@tiptap/extension-color';
-import TextStyle from '@tiptap/extension-text-style';
-import Subscript from '@tiptap/extension-subscript';
-import Superscript from '@tiptap/extension-superscript';
 import { Trash2, Pin, PinOff } from 'lucide-react';
 
 import { getNoteById, updateNote, deleteNote } from '../../api/notes';
 import type { NoteSummary } from '../../types/note';
-import { uploadImage } from '../../api/images';
 import { useAutoSave } from '../../hooks/useAutoSave';
-import { EditorToolbar } from './EditorToolbar';
-import { TableMenu } from './TableMenu';
-import { SearchBar } from './SearchBar';
-import { ResizableImage } from './extensions/resizable-image';
-import { SearchAndReplace } from './extensions/search-and-replace';
-import { TagPicker } from '../tags/TagPicker';
 import { Scratchpad } from '../scratchpad/Scratchpad';
 
 interface NoteEditorProps {
@@ -40,16 +14,12 @@ interface NoteEditorProps {
 
 export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
   const queryClient = useQueryClient();
-  const [showSearch, setShowSearch] = useState(false);
-  const [title, setTitle] = useState('');
-  const { save, saveNow } = useAutoSave(noteId);
-
-  // Refs to avoid stale closures in useEditor's onUpdate
-  const titleRef = useRef(title);
-  titleRef.current = title;
+  const [content, setContent] = useState('');
+  const { save } = useAutoSave(noteId);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const isLoadingRef = useRef(false);
   const saveRef = useRef(save);
   saveRef.current = save;
-  const isLoadingRef = useRef(false);
 
   const { data: note } = useQuery({
     queryKey: ['note', noteId],
@@ -75,136 +45,40 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
     },
   });
 
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
-      }),
-      Underline,
-      Link.configure({ openOnClick: false, autolink: true }),
-      Highlight.configure({ multicolor: true }),
-      TextAlign.configure({ types: ['heading', 'paragraph'] }),
-      Placeholder.configure({ placeholder: 'Start writing...' }),
-      TaskList,
-      TaskItem.configure({ nested: true }),
-      Table.configure({ resizable: true, lastColumnResizable: true }),
-      TableRow,
-      TableHeader,
-      TableCell,
-      Typography,
-      CharacterCount,
-      Color,
-      TextStyle,
-      Subscript,
-      Superscript,
-      SearchAndReplace,
-      ResizableImage,
-    ],
-    content: '',
-    onUpdate: ({ editor: e }) => {
-      if (isLoadingRef.current) return;
-      saveRef.current(e.getHTML(), titleRef.current);
-    },
-    editorProps: {
-      handleDrop: (view, event) => {
-        const files = event.dataTransfer?.files;
-        if (!files?.length) return false;
-
-        const imageFiles = Array.from(files).filter((f) => f.type.startsWith('image/'));
-        if (!imageFiles.length) return false;
-
-        event.preventDefault();
-
-        for (const file of imageFiles) {
-          uploadImage(file).then((img) => {
-            const { schema } = view.state;
-            const node = schema.nodes.resizableImage.create({
-              src: img.url,
-              width: img.width,
-              height: img.height,
-            });
-            const pos = view.posAtCoords({ left: event.clientX, top: event.clientY });
-            if (pos) {
-              const tr = view.state.tr.insert(pos.pos, node);
-              view.dispatch(tr);
-            }
-          });
-        }
-
-        return true;
-      },
-      handlePaste: (view, event) => {
-        const items = event.clipboardData?.items;
-        if (!items) return false;
-
-        const imageItems = Array.from(items).filter((item) => item.type.startsWith('image/'));
-        if (!imageItems.length) return false;
-
-        event.preventDefault();
-
-        for (const item of imageItems) {
-          const file = item.getAsFile();
-          if (!file) continue;
-          uploadImage(file).then((img) => {
-            const { schema } = view.state;
-            const node = schema.nodes.resizableImage.create({
-              src: img.url,
-              width: img.width,
-              height: img.height,
-            });
-            const tr = view.state.tr.replaceSelectionWith(node);
-            view.dispatch(tr);
-          });
-        }
-
-        return true;
-      },
-    },
-  });
-
-  // Load note content into editor
+  // Load note content
   useEffect(() => {
-    if (note && editor) {
+    if (note) {
       isLoadingRef.current = true;
-      setTitle(note.title);
-      editor.commands.setContent(note.content || '');
+      setContent(note.content || '');
       isLoadingRef.current = false;
     }
-  }, [note, editor]);
+  }, [note]);
 
-  // Ctrl+F shortcut
+  // Auto-focus on load
   useEffect(() => {
-    function handleKeyDown(e: globalThis.KeyboardEvent) {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
-        e.preventDefault();
-        setShowSearch((prev) => !prev);
-      }
+    if (note && textareaRef.current) {
+      textareaRef.current.focus();
     }
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [note]);
 
-  const handleTitleChange = useCallback(
-    (newTitle: string) => {
-      setTitle(newTitle);
-      // Optimistically update the title in the note list immediately
-      queryClient.setQueriesData<NoteSummary[]>(
-        { queryKey: ['notes'] },
-        (old) => old?.map((n) => n.id === noteId ? { ...n, title: newTitle } : n)
-      );
-      if (noteId && editor) {
-        save(editor.getHTML(), newTitle);
+  const handleChange = useCallback(
+    (value: string) => {
+      setContent(value);
+      if (!isLoadingRef.current) {
+        // Optimistically update title (first line) in note list
+        const firstLine = value.split('\n')[0]?.trim() || 'Untitled';
+        queryClient.setQueriesData<NoteSummary[]>(
+          { queryKey: ['notes'] },
+          (old) =>
+            old?.map((n) =>
+              n.id === noteId ? { ...n, title: firstLine, content: value } : n
+            )
+        );
+        saveRef.current(value);
       }
     },
-    [noteId, editor, save, queryClient]
+    [noteId, queryClient]
   );
-
-  const handleTitleBlur = useCallback(async () => {
-    if (noteId && editor) {
-      await saveNow(editor.getHTML(), title);
-      queryClient.invalidateQueries({ queryKey: ['notes'] });
-    }
-  }, [noteId, editor, title, saveNow, queryClient]);
 
   if (!noteId) {
     return <Scratchpad />;
@@ -212,16 +86,8 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-950">
-      {/* Title + actions */}
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => handleTitleChange(e.target.value)}
-          onBlur={handleTitleBlur}
-          placeholder="Note title..."
-          className="flex-1 bg-transparent text-xl font-semibold text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none"
-        />
+      {/* Action bar */}
+      <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
         <button
           onClick={() => {
             if (noteId && note) {
@@ -231,7 +97,11 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
           className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
           title={note?.isPinned ? 'Unpin' : 'Pin'}
         >
-          {note?.isPinned ? <PinOff className="w-4 h-4" /> : <Pin className="w-4 h-4" />}
+          {note?.isPinned ? (
+            <PinOff className="w-4 h-4" />
+          ) : (
+            <Pin className="w-4 h-4" />
+          )}
         </button>
         <button
           onClick={() => {
@@ -246,37 +116,38 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
         </button>
       </div>
 
-      {/* Tags */}
-      {noteId && (
-        <div className="px-4 py-1.5 border-b border-slate-200/50 dark:border-slate-800/50">
-          <TagPicker
-            noteId={noteId}
-            currentTags={note?.tags?.map((nt) => nt.tag) || []}
-          />
-        </div>
-      )}
-
-      {/* Toolbar */}
-      <EditorToolbar editor={editor} onToggleSearch={() => setShowSearch(!showSearch)} />
-
-      {/* Search bar */}
-      {showSearch && editor && (
-        <SearchBar editor={editor} onClose={() => setShowSearch(false)} />
-      )}
-
-      {/* Editor content */}
-      <div className="flex-1 overflow-y-auto">
-        {editor && <TableMenu editor={editor} />}
-        <EditorContent editor={editor} className="tiptap prose dark:prose-invert max-w-none" />
-      </div>
+      {/* Plain text editor */}
+      <textarea
+        ref={textareaRef}
+        value={content}
+        onChange={(e) => handleChange(e.target.value)}
+        onKeyDown={(e) => {
+          // Insert tab as spaces instead of moving focus
+          if (e.key === 'Tab') {
+            e.preventDefault();
+            const start = e.currentTarget.selectionStart;
+            const end = e.currentTarget.selectionEnd;
+            const newValue =
+              content.substring(0, start) + '  ' + content.substring(end);
+            handleChange(newValue);
+            // Restore cursor position after state update
+            requestAnimationFrame(() => {
+              if (textareaRef.current) {
+                textareaRef.current.selectionStart = start + 2;
+                textareaRef.current.selectionEnd = start + 2;
+              }
+            });
+          }
+        }}
+        placeholder="Start writing..."
+        className="flex-1 w-full px-4 py-3 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none font-mono text-sm leading-relaxed"
+        spellCheck={false}
+      />
 
       {/* Status bar */}
-      {editor && (
-        <div className="flex items-center justify-between px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">
-          <span>{editor.storage.characterCount?.characters()} characters</span>
-          <span>{editor.storage.characterCount?.words()} words</span>
-        </div>
-      )}
+      <div className="px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">
+        {content.length} characters
+      </div>
     </div>
   );
 }

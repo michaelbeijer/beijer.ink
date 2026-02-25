@@ -9,7 +9,7 @@ export async function search(req: Request, res: Response) {
     return;
   }
 
-  const { q, notebookId, tagId, limit, offset } = parsed.data;
-  const result = await searchService.searchNotes(q, { notebookId, tagId, limit, offset });
+  const { q, notebookId, limit, offset } = parsed.data;
+  const result = await searchService.searchNotes(q, { notebookId, limit, offset });
   res.json(result);
 }

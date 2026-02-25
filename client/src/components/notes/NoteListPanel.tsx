@@ -61,26 +61,9 @@ function DraggableNoteItem({ note, isSelected, isFocused, onSelect }: DraggableN
         <div className="flex-1 min-w-0">
           <h3 className="text-sm font-medium text-slate-900 dark:text-white truncate">{note.title}</h3>
           <p className="text-xs text-slate-500 mt-1 line-clamp-2">
-            {getPreview(note.plainText, 100) || 'Empty note'}
+            {getPreview(note.content, 100) || 'Empty note'}
           </p>
-          <div className="flex items-center gap-2 mt-1.5">
-            <span className="text-xs text-slate-400 dark:text-slate-600">{formatDate(note.updatedAt)}</span>
-            {note.tags.length > 0 && (
-              <div className="flex gap-1">
-                {note.tags.slice(0, 2).map((nt) => (
-                  <span
-                    key={nt.tagId}
-                    className="text-xs px-1.5 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400"
-                  >
-                    {nt.tag.name}
-                  </span>
-                ))}
-                {note.tags.length > 2 && (
-                  <span className="text-xs text-slate-400 dark:text-slate-600">+{note.tags.length - 2}</span>
-                )}
-              </div>
-            )}
-          </div>
+          <span className="text-xs text-slate-400 dark:text-slate-600 mt-1 block">{formatDate(note.updatedAt)}</span>
         </div>
       </div>
     </div>
@@ -117,19 +100,18 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
     // Cancel any in-flight refetches so they don't overwrite our optimistic update
     queryClient.cancelQueries({ queryKey: ['notes', nbId] });
 
-    // Optimistic: add placeholder to the list immediately (synchronous)
+    // Optimistic: add placeholder to the list immediately
     const tempId = 'temp-' + Date.now();
     queryClient.setQueryData<NoteSummary[]>(
       ['notes', nbId],
       (old) => [{
         id: tempId,
         title: 'Untitled',
-        plainText: '',
+        content: '',
         isPinned: false,
         sortOrder: 0,
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-        tags: [],
       }, ...(old || [])]
     );
 
@@ -146,7 +128,6 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
         onSelectNote(note.id);
       })
       .catch(() => {
-        // API failed — refetch to get accurate server state
         queryClient.invalidateQueries({ queryKey: ['notes', nbId] });
       })
       .finally(() => setCreating(false));

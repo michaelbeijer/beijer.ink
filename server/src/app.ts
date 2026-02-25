@@ -11,9 +11,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import authRoutes from './routes/auth.routes.js';
 import notebooksRoutes from './routes/notebooks.routes.js';
 import notesRoutes from './routes/notes.routes.js';
-import tagsRoutes from './routes/tags.routes.js';
 import searchRoutes from './routes/search.routes.js';
-import imagesRoutes from './routes/images.routes.js';
 import scratchpadRoutes from './routes/scratchpad.routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -34,9 +32,7 @@ export function createApp() {
   app.use('/api/auth', authRoutes);
   app.use('/api/notebooks', requireAuth, notebooksRoutes);
   app.use('/api/notes', requireAuth, notesRoutes);
-  app.use('/api/tags', requireAuth, tagsRoutes);
   app.use('/api/search', requireAuth, searchRoutes);
-  app.use('/api/images', requireAuth, imagesRoutes);
   app.use('/api/scratchpad', requireAuth, scratchpadRoutes);
 
   // Serve static frontend in production only

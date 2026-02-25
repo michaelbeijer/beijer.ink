@@ -13,7 +13,6 @@ export async function getNoteById(id: string): Promise<Note> {
 
 export async function createNote(body: {
   notebookId: string;
-  title?: string;
   content?: string;
 }): Promise<Note> {
   const { data } = await api.post<Note>('/notes', body);
@@ -22,7 +21,7 @@ export async function createNote(body: {
 
 export async function updateNote(
   id: string,
-  body: Partial<Pick<Note, 'title' | 'content' | 'notebookId' | 'isPinned'>>
+  body: Partial<Pick<Note, 'content' | 'notebookId' | 'isPinned'>>
 ): Promise<Note> {
   const { data } = await api.patch<Note>(`/notes/${id}`, body);
   return data;
@@ -34,10 +33,5 @@ export async function deleteNote(id: string): Promise<void> {
 
 export async function moveNote(id: string, notebookId: string): Promise<Note> {
   const { data } = await api.patch<Note>(`/notes/${id}/move`, { notebookId });
-  return data;
-}
-
-export async function setNoteTags(noteId: string, tagIds: string[]): Promise<Note> {
-  const { data } = await api.put<Note>(`/notes/${noteId}/tags`, { tagIds });
   return data;
 }

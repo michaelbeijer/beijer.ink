@@ -34,8 +34,3 @@ export async function move(req: Request, res: Response) {
   const note = await notesService.moveNote(req.params.id, req.body.notebookId);
   res.json(note);
 }
-
-export async function setTags(req: Request, res: Response) {
-  const note = await notesService.setNoteTags(req.params.id, req.body.tagIds);
-  res.json(note);
-}

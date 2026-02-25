@@ -47,10 +47,8 @@ model Note {
   id         String    @id @default(cuid())
   title      String    @default("Untitled")
   content    String    @default("")
-  plainText  String    @default("") @map("plain_text")
   notebookId String    @map("notebook_id")
   notebook   Notebook  @relation(fields: [notebookId], references: [id], onDelete: Cascade)
-  tags       NoteTag[]
   isPinned   Boolean   @default(false) @map("is_pinned")
   sortOrder  Int       @default(0) @map("sort_order")
   createdAt  DateTime  @default(now()) @map("created_at")
@@ -59,39 +57,4 @@ model Note {
   @@index([notebookId])
   @@index([updatedAt])
   @@map("notes")
-}
-
-model Tag {
-  id    String    @id @default(cuid())
-  name  String    @unique
-  color String?   @default("#6b7280")
-  notes NoteTag[]
-
-  @@map("tags")
-}
-
-model NoteTag {
-  noteId String @map("note_id")
-  tagId  String @map("tag_id")
-  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([noteId, tagId])
-  @@map("note_tags")
-}
-
-model Image {
-  id        String   @id @default(cuid())
-  noteId    String?  @map("note_id")
-  key       String   @unique
-  url       String
-  filename  String
-  mimeType  String   @map("mime_type")
-  sizeBytes Int      @map("size_bytes")
-  width     Int?
-  height    Int?
-  createdAt DateTime @default(now()) @map("created_at")
-
-  @@index([noteId])
-  @@map("images")
 }
