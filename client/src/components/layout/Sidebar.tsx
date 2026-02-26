@@ -79,7 +79,7 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
     [notebooks, expandedIds]
   );
 
-  const { focusedId, handleKeyDown, handleFocus } = useTreeKeyboardNav({
+  const { focusedId, setFocusedId, handleKeyDown, handleFocus, handleBlur } = useTreeKeyboardNav({
     nodes: flatNodes,
     expandedIds,
     toggleExpand,
@@ -87,6 +87,7 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
       onSelectNotebook(id);
       onClose?.();
     },
+    selectedId: selectedNotebookId,
   });
 
   // Close context menu on outside click
@@ -160,6 +161,7 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
+        onBlur={handleBlur}
       >
         {flatNodes.map((node) => (
           <SidebarNotebookNode
@@ -172,7 +174,7 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
             editName={editName}
             contextMenuId={contextMenuId}
             notebooks={notebooks}
-            onSelect={onSelectNotebook}
+            onSelect={(id: string) => { onSelectNotebook(id); setFocusedId(id); }}
             onToggleExpand={toggleExpand}
             onStartRename={handleStartRename}
             onRename={handleRename}

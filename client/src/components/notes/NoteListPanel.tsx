@@ -85,9 +85,10 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
     enabled: !!notebookId,
   });
 
-  const { focusedId, handleKeyDown, handleFocus } = useListKeyboardNav({
+  const { focusedId, setFocusedId, handleKeyDown, handleFocus, handleBlur } = useListKeyboardNav({
     items: notes,
     onSelect: onSelectNote,
+    selectedId: selectedNoteId,
   });
 
   const [creating, setCreating] = useState(false);
@@ -164,6 +165,7 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onFocus={handleFocus}
+        onBlur={handleBlur}
       >
         {notes.map((note: NoteSummary) => (
           <DraggableNoteItem
@@ -171,7 +173,7 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
             note={note}
             isSelected={note.id === selectedNoteId}
             isFocused={note.id === focusedId}
-            onSelect={onSelectNote}
+            onSelect={(id: string) => { onSelectNote(id); setFocusedId(id); }}
           />
         ))}
 

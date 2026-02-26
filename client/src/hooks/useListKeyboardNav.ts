@@ -3,9 +3,10 @@ import { useState, useCallback } from 'react';
 interface UseListKeyboardNavOptions {
   items: { id: string }[];
   onSelect: (id: string) => void;
+  selectedId: string | null;
 }
 
-export function useListKeyboardNav({ items, onSelect }: UseListKeyboardNavOptions) {
+export function useListKeyboardNav({ items, onSelect, selectedId }: UseListKeyboardNavOptions) {
   const [focusedId, setFocusedId] = useState<string | null>(null);
 
   const handleKeyDown = useCallback(
@@ -58,11 +59,28 @@ export function useListKeyboardNav({ items, onSelect }: UseListKeyboardNavOption
     [items, focusedId, onSelect]
   );
 
-  const handleFocus = useCallback(() => {
-    if (!focusedId && items.length > 0) {
-      setFocusedId(items[0].id);
-    }
-  }, [focusedId, items]);
+  // On focus: start from the currently selected item
+  const handleFocus = useCallback(
+    (e: React.FocusEvent) => {
+      if (e.currentTarget.contains(e.relatedTarget as Node)) return;
 
-  return { focusedId, setFocusedId, handleKeyDown, handleFocus };
+      if (selectedId && items.some((item) => item.id === selectedId)) {
+        setFocusedId(selectedId);
+      } else if (items.length > 0) {
+        setFocusedId(items[0].id);
+      }
+    },
+    [selectedId, items]
+  );
+
+  // On blur: clear focus ring when focus leaves the list
+  const handleBlur = useCallback(
+    (e: React.FocusEvent) => {
+      if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+      setFocusedId(null);
+    },
+    []
+  );
+
+  return { focusedId, setFocusedId, handleKeyDown, handleFocus, handleBlur };
 }

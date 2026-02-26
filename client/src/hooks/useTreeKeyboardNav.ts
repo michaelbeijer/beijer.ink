@@ -6,6 +6,7 @@ interface UseTreeKeyboardNavOptions {
   expandedIds: Set<string>;
   toggleExpand: (id: string) => void;
   onSelect: (id: string) => void;
+  selectedId: string | null;
 }
 
 export function useTreeKeyboardNav({
@@ -13,6 +14,7 @@ export function useTreeKeyboardNav({
   expandedIds,
   toggleExpand,
   onSelect,
+  selectedId,
 }: UseTreeKeyboardNavOptions) {
   const [focusedId, setFocusedId] = useState<string | null>(null);
 
@@ -89,11 +91,29 @@ export function useTreeKeyboardNav({
     [nodes, focusedId, expandedIds, toggleExpand, onSelect]
   );
 
-  const handleFocus = useCallback(() => {
-    if (!focusedId && nodes.length > 0) {
-      setFocusedId(nodes[0].id);
-    }
-  }, [focusedId, nodes]);
+  // On focus: start from the currently selected item
+  const handleFocus = useCallback(
+    (e: React.FocusEvent) => {
+      // Ignore focus moving between children within the same container
+      if (e.currentTarget.contains(e.relatedTarget as Node)) return;
 
-  return { focusedId, setFocusedId, handleKeyDown, handleFocus };
+      if (selectedId && nodes.some((n) => n.id === selectedId)) {
+        setFocusedId(selectedId);
+      } else if (nodes.length > 0) {
+        setFocusedId(nodes[0].id);
+      }
+    },
+    [selectedId, nodes]
+  );
+
+  // On blur: clear focus ring when focus leaves the tree
+  const handleBlur = useCallback(
+    (e: React.FocusEvent) => {
+      if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+      setFocusedId(null);
+    },
+    []
+  );
+
+  return { focusedId, setFocusedId, handleKeyDown, handleFocus, handleBlur };
 }
