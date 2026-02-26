@@ -7,7 +7,24 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.5.1**
+Current Version: **0.6.0**
+
+---
+
+## [0.6.0] — 2026-02-26
+
+### Added
+- **CodeMirror 6 editor** — Notes and scratchpad now use CodeMirror 6 with inline markdown styling: bold text appears bold, headers are larger, code is highlighted, and markup characters (`**`, `##`, `` ` ``) remain visible but dimmed
+- **Markdown toolbar** — Toggleable formatting toolbar with buttons for bold, italic, strikethrough, headings (H1–H3), inline code, links, bullet/ordered lists, blockquotes, and horizontal rules; toolbar state persisted in localStorage
+- **Fullscreen mode** — Expand the note editor to fill the entire page (hides sidebar and note list); exit with Escape or the minimize button
+
+### Changed
+- Note list panel is hidden when no notebook is selected, giving the scratchpad more room on initial load
+- Scratchpad uses monospace font to match the note editor
+
+### Fixed
+- Move to submenu no longer clipped by sidebar overflow — changed from right-flyout to inline expandable list
+- Space bar and arrow keys now work correctly when renaming notebooks in the sidebar
 
 ---
 

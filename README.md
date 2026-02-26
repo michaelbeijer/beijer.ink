@@ -1,6 +1,6 @@
 # Beijer.ink
 
-A personal note-taking web app with rich WYSIWYG editing, full-text search, and a clean responsive UI. Built as a single-user app, accessible as a PWA on mobile.
+A personal note-taking web app with inline markdown styling, full-text search, and a clean responsive UI. Built as a single-user app, accessible as a PWA on mobile.
 
 <img width="1424" height="1113" alt="image" src="https://github.com/user-attachments/assets/f3d0ce56-4111-455b-9a12-3840455f45bd" />
 
@@ -9,24 +9,21 @@ A personal note-taking web app with rich WYSIWYG editing, full-text search, and 
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | React 19, Vite, TipTap, Tailwind CSS 4, React Query |
+| Frontend | React 19, Vite, CodeMirror 6, Tailwind CSS 4, React Query |
 | Backend | Node.js, Express, TypeScript |
 | Database | PostgreSQL (Prisma ORM) |
 | Search | PostgreSQL full-text search (tsvector + GIN index) |
-| Image Storage | Cloudflare R2 (S3-compatible) |
 | Auth | Single password with bcrypt + JWT |
 | Deployment | Docker on Railway |
 
 ## Features
 
-- **Rich text editor** — TipTap-based with bold, italic, underline, headings, links, colors, highlights, code blocks, task lists, and typography corrections
-- **Tables** — Full table support with add/remove rows and columns, header rows, and merge cells
-- **Image support** — Paste or upload images with drag-to-resize handles
+- **Inline markdown editor** — CodeMirror 6 with live markdown styling: bold text appears bold, headers are larger, code is highlighted, and markup characters remain visible but dimmed
+- **Markdown toolbar** — Toggleable formatting toolbar for bold, italic, strikethrough, headings, code, links, lists, blockquotes, and horizontal rules
+- **Fullscreen mode** — Expand the editor to fill the entire page; exit with Escape
 - **Global search** — Weighted PostgreSQL FTS across all notes (title boosted over content), with highlighted result snippets
-- **In-document search** — Ctrl+F find-and-replace within the current note
-- **Notebooks** — Organize notes in a tree of notebooks with drag-and-drop
-- **Tags** — Color-coded tags with autocomplete picker
-- **Scratchpad** — Instant-access textarea on app load for quick jotting; auto-saved and always available
+- **Notebooks** — Organize notes in a hierarchical tree with right-click context menu for moving, renaming, and creating sub-notebooks
+- **Scratchpad** — Instant-access editor on app load for quick jotting; auto-saved and always available
 - **Auto-save** — 1-second debounce, saves in the background
 - **Responsive layout** — 3-column desktop, 2-column tablet, single-column mobile with bottom navigation
 - **Light/Dark mode** — Toggle between light and dark themes, preference saved across sessions
@@ -39,8 +36,9 @@ beijer.ink/
 ├── client/               # React + Vite frontend
 │   ├── src/
 │   │   ├── api/          # Axios API wrappers
-│   │   ├── components/   # UI components (layout, editor, notes, search, tags, auth)
-│   │   ├── hooks/        # React hooks (useAuth, useNotes, useAutoSave, useSearch)
+│   │   ├── components/   # UI components (layout, editor, notes, search, auth)
+│   │   ├── editor/       # CodeMirror theme and highlight styles
+│   │   ├── hooks/        # React hooks (useAuth, useAutoSave, useCodeMirror, useSearch)
 │   │   └── types/        # TypeScript type definitions
 │   └── public/           # PWA manifest, icons, service worker
 ├── server/               # Express API backend
@@ -131,16 +129,9 @@ All endpoints under `/api`, JWT-protected except login.
 | `PATCH` | `/api/notes/:id` | Update note (auto-save) |
 | `DELETE` | `/api/notes/:id` | Delete note |
 | `PATCH` | `/api/notes/:id/move` | Move note to another notebook |
-| `PUT` | `/api/notes/:id/tags` | Set tags on a note |
-| `GET` | `/api/tags` | List all tags |
-| `POST` | `/api/tags` | Create tag |
-| `PATCH` | `/api/tags/:id` | Update tag |
-| `DELETE` | `/api/tags/:id` | Delete tag |
 | `GET` | `/api/scratchpad` | Get scratchpad content |
 | `PUT` | `/api/scratchpad` | Update scratchpad content |
 | `GET` | `/api/search?q=...` | Full-text search with highlighted snippets |
-| `POST` | `/api/images/upload` | Upload image to R2 |
-| `DELETE` | `/api/images/:id` | Delete image |
 
 ## Deployment (Railway)
 
