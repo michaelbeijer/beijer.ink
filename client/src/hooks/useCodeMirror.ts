@@ -14,16 +14,25 @@ interface UseCodeMirrorOptions {
 }
 
 export function useCodeMirror({ onChange, placeholder, dark }: UseCodeMirrorOptions) {
-  const containerRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const suppressRef = useRef(false);
   const themeCompartment = useRef(new Compartment());
+  const darkRef = useRef(dark);
+  darkRef.current = dark;
+  const placeholderRef = useRef(placeholder);
+  placeholderRef.current = placeholder;
 
-  // Create editor on mount
-  useEffect(() => {
-    if (!containerRef.current) return;
+  // Callback ref: create EditorView when container mounts, destroy when it unmounts.
+  // Unlike useEffect(fn, []), this fires reliably when the DOM element appears.
+  const containerRef = useCallback((el: HTMLDivElement | null) => {
+    if (viewRef.current) {
+      viewRef.current.destroy();
+      viewRef.current = null;
+    }
+
+    if (!el) return;
 
     const updateListener = EditorView.updateListener.of((update) => {
       if (update.docChanged && !suppressRef.current) {
@@ -32,7 +41,6 @@ export function useCodeMirror({ onChange, placeholder, dark }: UseCodeMirrorOpti
     });
 
     const extensions = [
-      // Core editing
       history(),
       closeBrackets(),
       keymap.of([
@@ -41,35 +49,23 @@ export function useCodeMirror({ onChange, placeholder, dark }: UseCodeMirrorOpti
         ...historyKeymap,
         indentWithTab,
       ]),
-      // Markdown
       markdown({ codeLanguages: languages }),
-      // Theme (in compartment for dynamic switching)
-      themeCompartment.current.of(dark ? darkTheme : lightTheme),
-      // Behavior
+      themeCompartment.current.of(darkRef.current ? darkTheme : lightTheme),
       EditorView.lineWrapping,
       updateListener,
     ];
 
-    if (placeholder) {
-      extensions.push(cmPlaceholder(placeholder));
+    if (placeholderRef.current) {
+      extensions.push(cmPlaceholder(placeholderRef.current));
     }
 
-    const view = new EditorView({
+    viewRef.current = new EditorView({
       state: EditorState.create({
         doc: '',
         extensions,
       }),
-      parent: containerRef.current,
+      parent: el,
     });
-
-    viewRef.current = view;
-
-    return () => {
-      view.destroy();
-      viewRef.current = null;
-    };
-    // Only run on mount — dark/placeholder changes handled separately
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Switch theme when dark mode changes

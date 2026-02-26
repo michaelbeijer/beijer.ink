@@ -1,92 +1,12 @@
-import { EditorView } from '@codemirror/view';
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language';
 import { tags } from '@lezer/highlight';
 
 /**
- * CodeMirror editor theme — matches app's slate palette with .dark class support.
- */
-const editorTheme = EditorView.theme(
-  {
-    '&': {
-      fontSize: '14px',
-      fontFamily:
-        'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace',
-      height: '100%',
-    },
-    '.cm-content': {
-      padding: '12px 16px',
-      caretColor: '#3b82f6',
-      lineHeight: '1.7',
-    },
-    '.cm-cursor': {
-      borderLeftColor: '#3b82f6',
-    },
-    '&.cm-focused .cm-cursor': {
-      borderLeftColor: '#3b82f6',
-    },
-    '&.cm-focused': {
-      outline: 'none',
-    },
-    '.cm-scroller': {
-      overflow: 'auto',
-    },
-    '.cm-gutters': {
-      display: 'none',
-    },
-    '.cm-activeLine': {
-      backgroundColor: 'transparent',
-    },
-    '.cm-selectionBackground': {
-      backgroundColor: '#3b82f620 !important',
-    },
-    '&.cm-focused .cm-selectionBackground': {
-      backgroundColor: '#3b82f630 !important',
-    },
-    // Light mode defaults
-    '.cm-line': {
-      color: '#0f172a',
-    },
-    // Placeholder
-    '.cm-placeholder': {
-      color: '#94a3b8',
-    },
-  },
-  { dark: false }
-);
-
-/**
- * Dark mode overrides — applied via .dark ancestor class.
- */
-const darkOverrides = EditorView.theme(
-  {
-    '.cm-content': {
-      caretColor: '#60a5fa',
-    },
-    '.cm-cursor': {
-      borderLeftColor: '#60a5fa',
-    },
-    '&.cm-focused .cm-cursor': {
-      borderLeftColor: '#60a5fa',
-    },
-    '.cm-line': {
-      color: '#e2e8f0',
-    },
-    '.cm-placeholder': {
-      color: '#475569',
-    },
-    '.cm-selectionBackground': {
-      backgroundColor: '#3b82f630 !important',
-    },
-    '&.cm-focused .cm-selectionBackground': {
-      backgroundColor: '#3b82f640 !important',
-    },
-  },
-  { dark: true }
-);
-
-/**
  * Markdown syntax highlighting — styles content inline while keeping markup visible.
  * Markup characters (**, ##, `, etc.) are dimmed via processingInstruction tag.
+ *
+ * Base editor styles (font, padding, colors) are in index.css using Tailwind's
+ * .dark class, which avoids CodeMirror's .cm-light/.cm-dark scoping issues.
  */
 const lightHighlight = HighlightStyle.define([
   // Headings — progressively smaller
@@ -156,15 +76,8 @@ const darkHighlight = HighlightStyle.define([
   { tag: tags.content, color: '#e2e8f0' },
 ]);
 
-/** Light mode extensions */
-export const lightTheme = [
-  editorTheme,
-  syntaxHighlighting(lightHighlight),
-];
+/** Light mode extensions (syntax highlighting only) */
+export const lightTheme = [syntaxHighlighting(lightHighlight)];
 
-/** Dark mode extensions */
-export const darkTheme = [
-  editorTheme,
-  darkOverrides,
-  syntaxHighlighting(darkHighlight),
-];
+/** Dark mode extensions (syntax highlighting only) */
+export const darkTheme = [syntaxHighlighting(darkHighlight)];

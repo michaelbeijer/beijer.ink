@@ -7,6 +7,7 @@ import { MobileNav } from './MobileNav';
 import { DragOverlayContent } from './DragOverlayContent';
 import { NoteListPanel } from '../notes/NoteListPanel';
 import { NoteEditor } from '../editor/NoteEditor';
+import { Scratchpad } from '../scratchpad/Scratchpad';
 import { GlobalSearchDialog } from '../search/GlobalSearchDialog';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useDndNotebooks } from '../../hooks/useDndNotebooks';
@@ -113,12 +114,16 @@ export function AppShell() {
             </div>
 
             <div className="flex-1 min-h-0">
-              <NoteEditor
-                noteId={selectedNoteId}
-                onNoteDeleted={handleNoteDeleted}
-                isFullscreen={isFullscreen}
-                onToggleFullscreen={toggleFullscreen}
-              />
+              {selectedNoteId ? (
+                <NoteEditor
+                  noteId={selectedNoteId}
+                  onNoteDeleted={handleNoteDeleted}
+                  isFullscreen={isFullscreen}
+                  onToggleFullscreen={toggleFullscreen}
+                />
+              ) : (
+                <Scratchpad />
+              )}
             </div>
           </div>
 
@@ -185,7 +190,11 @@ export function AppShell() {
           )}
 
           {mobileView === 'editor' && (
-            <NoteEditor noteId={selectedNoteId} onNoteDeleted={handleNoteDeleted} />
+            selectedNoteId ? (
+              <NoteEditor noteId={selectedNoteId} onNoteDeleted={handleNoteDeleted} />
+            ) : (
+              <Scratchpad />
+            )
           )}
         </div>
 

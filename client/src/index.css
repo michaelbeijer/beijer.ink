@@ -43,20 +43,75 @@
   background: #475569;
 }
 
-/* CodeMirror — fill container */
+/* ── CodeMirror base styles ── */
 .cm-editor {
   height: 100%;
+  font-size: 14px;
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+    "Liberation Mono", monospace;
+}
+
+.cm-editor.cm-focused {
+  outline: none;
 }
 
 .cm-editor .cm-scroller {
   overflow: auto;
 }
 
-/* Dark mode overrides for CodeMirror */
+.cm-editor .cm-content {
+  padding: 12px 16px;
+  caret-color: #3b82f6;
+  line-height: 1.7;
+  color: #0f172a;
+}
+
+.cm-editor .cm-cursor {
+  border-left-color: #3b82f6;
+}
+
+.cm-editor .cm-gutters {
+  display: none;
+}
+
+.cm-editor .cm-activeLine {
+  background-color: transparent;
+}
+
+.cm-editor .cm-selectionBackground {
+  background-color: rgba(59, 130, 246, 0.12) !important;
+}
+
+.cm-editor.cm-focused .cm-selectionBackground {
+  background-color: rgba(59, 130, 246, 0.19) !important;
+}
+
+.cm-editor .cm-placeholder {
+  color: #94a3b8;
+}
+
+/* ── CodeMirror dark mode ── */
 .dark .cm-editor {
   background-color: transparent;
 }
 
 .dark .cm-editor .cm-content {
   caret-color: #60a5fa;
+  color: #e2e8f0;
+}
+
+.dark .cm-editor .cm-cursor {
+  border-left-color: #60a5fa;
+}
+
+.dark .cm-editor .cm-selectionBackground {
+  background-color: rgba(59, 130, 246, 0.19) !important;
+}
+
+.dark .cm-editor.cm-focused .cm-selectionBackground {
+  background-color: rgba(59, 130, 246, 0.25) !important;
+}
+
+.dark .cm-editor .cm-placeholder {
+  color: #475569;
 }

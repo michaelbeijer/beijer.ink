@@ -8,12 +8,11 @@ import { useAutoSave } from '../../hooks/useAutoSave';
 import { useCodeMirror } from '../../hooks/useCodeMirror';
 import { useTheme } from '../../contexts/ThemeContext';
 import { MarkdownToolbar } from './MarkdownToolbar';
-import { Scratchpad } from '../scratchpad/Scratchpad';
 
 const TOOLBAR_KEY = 'beijer-ink-toolbar';
 
 interface NoteEditorProps {
-  noteId: string | null;
+  noteId: string;
   onNoteDeleted?: () => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
@@ -57,8 +56,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
 
   const { data: note } = useQuery({
     queryKey: ['note', noteId],
-    queryFn: () => getNoteById(noteId!),
-    enabled: !!noteId,
+    queryFn: () => getNoteById(noteId),
   });
 
   const deleteMutation = useMutation({
@@ -112,10 +110,6 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
       return next;
     });
   }, []);
-
-  if (!noteId) {
-    return <Scratchpad />;
-  }
 
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-950">
