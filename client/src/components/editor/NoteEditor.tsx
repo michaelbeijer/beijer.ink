@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2, Pin, PinOff } from 'lucide-react';
+import { Trash2, Pin, PinOff, Maximize2, Minimize2 } from 'lucide-react';
 
 import { getNoteById, updateNote, deleteNote } from '../../api/notes';
 import type { NoteSummary } from '../../types/note';
@@ -10,9 +10,11 @@ import { Scratchpad } from '../scratchpad/Scratchpad';
 interface NoteEditorProps {
   noteId: string | null;
   onNoteDeleted?: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
-export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
+export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullscreen }: NoteEditorProps) {
   const queryClient = useQueryClient();
   const [content, setContent] = useState('');
   const { save } = useAutoSave(noteId);
@@ -61,6 +63,16 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
     }
   }, [note]);
 
+  // Escape exits fullscreen
+  useEffect(() => {
+    if (!isFullscreen || !onToggleFullscreen) return;
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onToggleFullscreen!();
+    }
+    document.addEventListener('keydown', handleKey);
+    return () => document.removeEventListener('keydown', handleKey);
+  }, [isFullscreen, onToggleFullscreen]);
+
   const handleChange = useCallback(
     (value: string) => {
       setContent(value);
@@ -87,7 +99,20 @@ export function NoteEditor({ noteId, onNoteDeleted }: NoteEditorProps) {
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-950">
       {/* Action bar */}
-      <div className="flex items-center justify-end gap-2 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-end gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
+        {onToggleFullscreen && (
+          <button
+            onClick={onToggleFullscreen}
+            className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+            title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
+          >
+            {isFullscreen ? (
+              <Minimize2 className="w-4 h-4" />
+            ) : (
+              <Maximize2 className="w-4 h-4" />
+            )}
+          </button>
+        )}
         <button
           onClick={() => {
             if (noteId && note) {

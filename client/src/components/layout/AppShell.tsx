@@ -20,8 +20,11 @@ export function AppShell() {
   const [showSearch, setShowSearch] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>('editor');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const isDesktop = useMediaQuery('(min-width: 1024px)');
+
+  const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
 
   const {
     sensors,
@@ -73,22 +76,26 @@ export function AppShell() {
         onDragCancel={handleDragCancel}
       >
         <div className="h-screen flex bg-white dark:bg-slate-950">
-          {/* Sidebar */}
-          <div className="w-60 shrink-0">
-            <Sidebar
-              selectedNotebookId={selectedNotebookId}
-              onSelectNotebook={handleSelectNotebook}
-            />
-          </div>
+          {!isFullscreen && (
+            <>
+              {/* Sidebar */}
+              <div className="w-60 shrink-0">
+                <Sidebar
+                  selectedNotebookId={selectedNotebookId}
+                  onSelectNotebook={handleSelectNotebook}
+                />
+              </div>
 
-          {/* Note list */}
-          <div className="w-72 shrink-0">
-            <NoteListPanel
-              notebookId={selectedNotebookId}
-              selectedNoteId={selectedNoteId}
-              onSelectNote={handleSelectNote}
-            />
-          </div>
+              {/* Note list */}
+              <div className="w-72 shrink-0">
+                <NoteListPanel
+                  notebookId={selectedNotebookId}
+                  selectedNoteId={selectedNoteId}
+                  onSelectNote={handleSelectNote}
+                />
+              </div>
+            </>
+          )}
 
           {/* Editor */}
           <div className="flex-1 min-w-0 flex flex-col">
@@ -104,7 +111,12 @@ export function AppShell() {
             </div>
 
             <div className="flex-1 min-h-0">
-              <NoteEditor noteId={selectedNoteId} onNoteDeleted={handleNoteDeleted} />
+              <NoteEditor
+                noteId={selectedNoteId}
+                onNoteDeleted={handleNoteDeleted}
+                isFullscreen={isFullscreen}
+                onToggleFullscreen={toggleFullscreen}
+              />
             </div>
           </div>
 
