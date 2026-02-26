@@ -86,14 +86,16 @@ export function AppShell() {
                 />
               </div>
 
-              {/* Note list */}
-              <div className="w-72 shrink-0">
-                <NoteListPanel
-                  notebookId={selectedNotebookId}
-                  selectedNoteId={selectedNoteId}
-                  onSelectNote={handleSelectNote}
-                />
-              </div>
+              {/* Note list — only show when a notebook is selected */}
+              {selectedNotebookId && (
+                <div className="w-72 shrink-0">
+                  <NoteListPanel
+                    notebookId={selectedNotebookId}
+                    selectedNoteId={selectedNoteId}
+                    onSelectNote={handleSelectNote}
+                  />
+                </div>
+              )}
             </>
           )}
 

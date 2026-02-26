@@ -64,7 +64,7 @@ export function Scratchpad() {
         value={content}
         onChange={(e) => handleChange(e.target.value)}
         placeholder="Jot something down..."
-        className="flex-1 w-full px-4 py-3 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none text-sm leading-relaxed"
+        className="flex-1 w-full px-4 py-3 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none font-mono text-sm leading-relaxed"
       />
 
       {/* Footer */}
