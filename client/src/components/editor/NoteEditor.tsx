@@ -1,15 +1,20 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2, Pin, PinOff, Maximize2, Minimize2, Type } from 'lucide-react';
+import { Trash2, Pin, PinOff, Maximize2, Minimize2, Type, Pencil, Eye, Columns2 } from 'lucide-react';
 
 import { getNoteById, updateNote, deleteNote } from '../../api/notes';
 import type { NoteSummary } from '../../types/note';
 import { useAutoSave } from '../../hooks/useAutoSave';
 import { useCodeMirror } from '../../hooks/useCodeMirror';
 import { useTheme } from '../../contexts/ThemeContext';
+import { stripMarkdown } from '../../utils/stripMarkdown';
 import { MarkdownToolbar } from './MarkdownToolbar';
+import { MarkdownPreview } from './MarkdownPreview';
 
 const TOOLBAR_KEY = 'beijer-ink-toolbar';
+const MODE_KEY = 'beijer-ink-editor-mode';
+
+type EditorMode = 'edit' | 'preview' | 'split';
 
 interface NoteEditorProps {
   noteId: string;
@@ -26,15 +31,20 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
   const saveRef = useRef(save);
   saveRef.current = save;
   const [charCount, setCharCount] = useState(0);
+  const [previewContent, setPreviewContent] = useState('');
   const [showToolbar, setShowToolbar] = useState(() => {
     return localStorage.getItem(TOOLBAR_KEY) === 'true';
+  });
+  const [editorMode, setEditorMode] = useState<EditorMode>(() => {
+    return (localStorage.getItem(MODE_KEY) as EditorMode) || 'edit';
   });
 
   const handleChange = useCallback(
     (value: string) => {
       setCharCount(value.length);
+      setPreviewContent(value);
       if (!isLoadingRef.current) {
-        const firstLine = value.split('\n')[0]?.trim() || 'Untitled';
+        const firstLine = stripMarkdown(value.split('\n')[0]?.trim() || '') || 'Untitled';
         queryClient.setQueriesData<NoteSummary[]>(
           { queryKey: ['notes'] },
           (old) =>
@@ -83,14 +93,15 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
       isLoadingRef.current = true;
       setDoc(note.content || '');
       setCharCount((note.content || '').length);
+      setPreviewContent(note.content || '');
       isLoadingRef.current = false;
     }
   }, [note, setDoc]);
 
-  // Auto-focus on load
+  // Auto-focus on load (only in edit modes)
   useEffect(() => {
-    if (note) focus();
-  }, [note, focus]);
+    if (note && editorMode !== 'preview') focus();
+  }, [note, focus, editorMode]);
 
   // Escape exits fullscreen
   useEffect(() => {
@@ -111,21 +122,53 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     });
   }, []);
 
+  // Persist editor mode
+  const changeMode = useCallback((mode: EditorMode) => {
+    setEditorMode(mode);
+    localStorage.setItem(MODE_KEY, mode);
+  }, []);
+
+  const showEditor = editorMode === 'edit' || editorMode === 'split';
+  const showPreview = editorMode === 'preview' || editorMode === 'split';
+
+  const modeButtonClass = (mode: EditorMode) =>
+    `p-1.5 rounded transition-colors ${
+      editorMode === mode
+        ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
+        : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+    }`;
+
   return (
     <div className="h-full flex flex-col bg-white dark:bg-slate-950">
       {/* Action bar */}
-      <div className="flex items-center justify-end gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
-        <button
-          onClick={toggleToolbar}
-          className={`p-1.5 rounded transition-colors ${
-            showToolbar
-              ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
-              : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
-          }`}
-          title={showToolbar ? 'Hide formatting toolbar' : 'Show formatting toolbar'}
-        >
-          <Type className="w-4 h-4" />
-        </button>
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
+        {/* Mode toggle — left side */}
+        <div className="flex items-center gap-0.5 mr-auto">
+          <button onClick={() => changeMode('edit')} className={modeButtonClass('edit')} title="Edit">
+            <Pencil className="w-4 h-4" />
+          </button>
+          <button onClick={() => changeMode('preview')} className={modeButtonClass('preview')} title="Preview">
+            <Eye className="w-4 h-4" />
+          </button>
+          <button onClick={() => changeMode('split')} className={modeButtonClass('split')} title="Split view">
+            <Columns2 className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Right-side actions */}
+        {showEditor && (
+          <button
+            onClick={toggleToolbar}
+            className={`p-1.5 rounded transition-colors ${
+              showToolbar
+                ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
+                : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+            title={showToolbar ? 'Hide formatting toolbar' : 'Show formatting toolbar'}
+          >
+            <Type className="w-4 h-4" />
+          </button>
+        )}
         {onToggleFullscreen && (
           <button
             onClick={onToggleFullscreen}
@@ -167,11 +210,31 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
         </button>
       </div>
 
-      {/* Markdown toolbar */}
-      {showToolbar && <MarkdownToolbar view={view} />}
+      {/* Markdown toolbar — only in edit/split modes */}
+      {showToolbar && showEditor && <MarkdownToolbar view={view} />}
 
-      {/* CodeMirror editor */}
-      <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden" />
+      {/* Editor / Preview area */}
+      <div className="flex-1 min-h-0 flex overflow-hidden">
+        {/* Editor — always mounted to preserve EditorView state, hidden in preview mode */}
+        <div
+          ref={containerRef}
+          className={`min-h-0 overflow-hidden ${
+            showEditor
+              ? editorMode === 'split' ? 'w-1/2' : 'w-full'
+              : 'w-0 overflow-hidden'
+          }`}
+        />
+
+        {editorMode === 'split' && (
+          <div className="w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
+        )}
+
+        {showPreview && (
+          <div className={`${editorMode === 'split' ? 'w-1/2' : 'w-full'} min-h-0 overflow-auto`}>
+            <MarkdownPreview content={previewContent} />
+          </div>
+        )}
+      </div>
 
       {/* Status bar */}
       <div className="px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">

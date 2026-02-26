@@ -1,8 +1,16 @@
 import { prisma } from '../lib/prisma.js';
 
 function extractTitle(content: string): string {
-  const firstLine = content.split('\n')[0]?.trim();
-  return firstLine || 'Untitled';
+  const firstLine = content.split('\n')[0]?.trim() || 'Untitled';
+  return firstLine
+    .replace(/^#{1,6}\s+/, '')                    // heading markers
+    .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')     // images
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')      // links
+    .replace(/(\*\*|__)(.*?)\1/g, '$2')            // bold
+    .replace(/(\*|_)(.*?)\1/g, '$2')               // italic
+    .replace(/~~(.*?)~~/g, '$1')                   // strikethrough
+    .replace(/`([^`]*)`/g, '$1')                   // inline code
+    .trim() || 'Untitled';
 }
 
 export async function getNotesInNotebook(notebookId: string) {

@@ -3,6 +3,7 @@ import { EditorView, placeholder as cmPlaceholder, keymap } from '@codemirror/vi
 import { EditorState, Compartment } from '@codemirror/state';
 import { markdown } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
+import { GFM } from '@lezer/markdown';
 import { defaultKeymap, indentWithTab, history, historyKeymap } from '@codemirror/commands';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { lightTheme, darkTheme } from '../editor/theme';
@@ -49,7 +50,7 @@ export function useCodeMirror({ onChange, placeholder, dark }: UseCodeMirrorOpti
         ...historyKeymap,
         indentWithTab,
       ]),
-      markdown({ codeLanguages: languages }),
+      markdown({ codeLanguages: languages, extensions: GFM }),
       themeCompartment.current.of(darkRef.current ? darkTheme : lightTheme),
       EditorView.lineWrapping,
       updateListener,
