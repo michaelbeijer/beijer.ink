@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Trash2, Pin, PinOff, Maximize2, Minimize2 } from 'lucide-react';
+import { Trash2, Pin, PinOff, Maximize2, Minimize2, Type } from 'lucide-react';
 
 import { getNoteById, updateNote, deleteNote } from '../../api/notes';
 import type { NoteSummary } from '../../types/note';
 import { useAutoSave } from '../../hooks/useAutoSave';
+import { useCodeMirror } from '../../hooks/useCodeMirror';
+import { useTheme } from '../../contexts/ThemeContext';
+import { MarkdownToolbar } from './MarkdownToolbar';
 import { Scratchpad } from '../scratchpad/Scratchpad';
+
+const TOOLBAR_KEY = 'beijer-ink-toolbar';
 
 interface NoteEditorProps {
   noteId: string | null;
@@ -16,12 +21,39 @@ interface NoteEditorProps {
 
 export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullscreen }: NoteEditorProps) {
   const queryClient = useQueryClient();
-  const [content, setContent] = useState('');
+  const { theme } = useTheme();
   const { save } = useAutoSave(noteId);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isLoadingRef = useRef(false);
   const saveRef = useRef(save);
   saveRef.current = save;
+  const [charCount, setCharCount] = useState(0);
+  const [showToolbar, setShowToolbar] = useState(() => {
+    return localStorage.getItem(TOOLBAR_KEY) === 'true';
+  });
+
+  const handleChange = useCallback(
+    (value: string) => {
+      setCharCount(value.length);
+      if (!isLoadingRef.current) {
+        const firstLine = value.split('\n')[0]?.trim() || 'Untitled';
+        queryClient.setQueriesData<NoteSummary[]>(
+          { queryKey: ['notes'] },
+          (old) =>
+            old?.map((n) =>
+              n.id === noteId ? { ...n, title: firstLine, content: value } : n
+            )
+        );
+        saveRef.current(value);
+      }
+    },
+    [noteId, queryClient]
+  );
+
+  const { containerRef, view, setDoc, focus } = useCodeMirror({
+    onChange: handleChange,
+    placeholder: 'Start writing...',
+    dark: theme === 'dark',
+  });
 
   const { data: note } = useQuery({
     queryKey: ['note', noteId],
@@ -47,21 +79,20 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     },
   });
 
-  // Load note content
+  // Load note content into CodeMirror
   useEffect(() => {
     if (note) {
       isLoadingRef.current = true;
-      setContent(note.content || '');
+      setDoc(note.content || '');
+      setCharCount((note.content || '').length);
       isLoadingRef.current = false;
     }
-  }, [note]);
+  }, [note, setDoc]);
 
   // Auto-focus on load
   useEffect(() => {
-    if (note && textareaRef.current) {
-      textareaRef.current.focus();
-    }
-  }, [note]);
+    if (note) focus();
+  }, [note, focus]);
 
   // Escape exits fullscreen
   useEffect(() => {
@@ -73,24 +104,14 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     return () => document.removeEventListener('keydown', handleKey);
   }, [isFullscreen, onToggleFullscreen]);
 
-  const handleChange = useCallback(
-    (value: string) => {
-      setContent(value);
-      if (!isLoadingRef.current) {
-        // Optimistically update title (first line) in note list
-        const firstLine = value.split('\n')[0]?.trim() || 'Untitled';
-        queryClient.setQueriesData<NoteSummary[]>(
-          { queryKey: ['notes'] },
-          (old) =>
-            old?.map((n) =>
-              n.id === noteId ? { ...n, title: firstLine, content: value } : n
-            )
-        );
-        saveRef.current(value);
-      }
-    },
-    [noteId, queryClient]
-  );
+  // Persist toolbar preference
+  const toggleToolbar = useCallback(() => {
+    setShowToolbar((prev) => {
+      const next = !prev;
+      localStorage.setItem(TOOLBAR_KEY, String(next));
+      return next;
+    });
+  }, []);
 
   if (!noteId) {
     return <Scratchpad />;
@@ -100,6 +121,17 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     <div className="h-full flex flex-col bg-white dark:bg-slate-950">
       {/* Action bar */}
       <div className="flex items-center justify-end gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
+        <button
+          onClick={toggleToolbar}
+          className={`p-1.5 rounded transition-colors ${
+            showToolbar
+              ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
+              : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+          }`}
+          title={showToolbar ? 'Hide formatting toolbar' : 'Show formatting toolbar'}
+        >
+          <Type className="w-4 h-4" />
+        </button>
         {onToggleFullscreen && (
           <button
             onClick={onToggleFullscreen}
@@ -141,37 +173,15 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
         </button>
       </div>
 
-      {/* Plain text editor */}
-      <textarea
-        ref={textareaRef}
-        value={content}
-        onChange={(e) => handleChange(e.target.value)}
-        onKeyDown={(e) => {
-          // Insert tab as spaces instead of moving focus
-          if (e.key === 'Tab') {
-            e.preventDefault();
-            const start = e.currentTarget.selectionStart;
-            const end = e.currentTarget.selectionEnd;
-            const newValue =
-              content.substring(0, start) + '  ' + content.substring(end);
-            handleChange(newValue);
-            // Restore cursor position after state update
-            requestAnimationFrame(() => {
-              if (textareaRef.current) {
-                textareaRef.current.selectionStart = start + 2;
-                textareaRef.current.selectionEnd = start + 2;
-              }
-            });
-          }
-        }}
-        placeholder="Start writing..."
-        className="flex-1 w-full px-4 py-3 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none font-mono text-sm leading-relaxed"
-        spellCheck={false}
-      />
+      {/* Markdown toolbar */}
+      {showToolbar && <MarkdownToolbar view={view} />}
+
+      {/* CodeMirror editor */}
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden" />
 
       {/* Status bar */}
       <div className="px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">
-        {content.length} characters
+        {charCount} characters
       </div>
     </div>
   );

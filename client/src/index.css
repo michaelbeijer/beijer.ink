@@ -42,3 +42,21 @@
 .dark::-webkit-scrollbar-thumb:hover {
   background: #475569;
 }
+
+/* CodeMirror — fill container */
+.cm-editor {
+  height: 100%;
+}
+
+.cm-editor .cm-scroller {
+  overflow: auto;
+}
+
+/* Dark mode overrides for CodeMirror */
+.dark .cm-editor {
+  background-color: transparent;
+}
+
+.dark .cm-editor .cm-content {
+  caret-color: #60a5fa;
+}

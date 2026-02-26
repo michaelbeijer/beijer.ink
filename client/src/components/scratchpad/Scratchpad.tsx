@@ -2,34 +2,17 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Pencil } from 'lucide-react';
 import { getScratchpad, updateScratchpad } from '../../api/scratchpad';
+import { useCodeMirror } from '../../hooks/useCodeMirror';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export function Scratchpad() {
-  const [content, setContent] = useState('');
+  const { theme } = useTheme();
+  const [charCount, setCharCount] = useState(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
   const lastSavedRef = useRef<string>('');
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const { data } = useQuery({
-    queryKey: ['scratchpad'],
-    queryFn: getScratchpad,
-  });
-
-  // Load saved content
-  useEffect(() => {
-    if (data) {
-      setContent(data.content);
-      lastSavedRef.current = data.content;
-    }
-  }, [data]);
-
-  // Auto-focus on mount
-  useEffect(() => {
-    setTimeout(() => textareaRef.current?.focus(), 50);
-  }, []);
-
-  // Auto-save with debounce
   const handleChange = useCallback((value: string) => {
-    setContent(value);
+    setCharCount(value.length);
 
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
@@ -42,6 +25,31 @@ export function Scratchpad() {
       }
     }, 1000);
   }, []);
+
+  const { containerRef, setDoc, focus } = useCodeMirror({
+    onChange: handleChange,
+    placeholder: 'Jot something down...',
+    dark: theme === 'dark',
+  });
+
+  const { data } = useQuery({
+    queryKey: ['scratchpad'],
+    queryFn: getScratchpad,
+  });
+
+  // Load saved content
+  useEffect(() => {
+    if (data) {
+      setDoc(data.content);
+      setCharCount(data.content.length);
+      lastSavedRef.current = data.content;
+    }
+  }, [data, setDoc]);
+
+  // Auto-focus on mount
+  useEffect(() => {
+    setTimeout(() => focus(), 50);
+  }, [focus]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -58,18 +66,12 @@ export function Scratchpad() {
         <h2 className="text-sm font-medium text-slate-600 dark:text-slate-300">Scratchpad</h2>
       </div>
 
-      {/* Textarea */}
-      <textarea
-        ref={textareaRef}
-        value={content}
-        onChange={(e) => handleChange(e.target.value)}
-        placeholder="Jot something down..."
-        className="flex-1 w-full px-4 py-3 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-600 resize-none focus:outline-none font-mono text-sm leading-relaxed"
-      />
+      {/* CodeMirror editor */}
+      <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden" />
 
       {/* Footer */}
       <div className="px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">
-        {content.length} characters
+        {charCount} characters
       </div>
     </div>
   );
