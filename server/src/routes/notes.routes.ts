@@ -6,6 +6,7 @@ import * as notesController from '../controllers/notes.controller.js';
 
 const router = Router();
 
+router.get('/root', asyncHandler(notesController.getRoot));
 router.get('/notebook/:notebookId', asyncHandler(notesController.getByNotebook));
 router.get('/:id', asyncHandler(notesController.getById));
 router.post('/', validate(createNoteSchema), asyncHandler(notesController.create));

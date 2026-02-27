@@ -2,12 +2,12 @@ export interface Note {
   id: string;
   title: string;
   content: string;
-  notebookId: string;
+  notebookId: string | null;
   isPinned: boolean;
   sortOrder: number;
   createdAt: string;
   updatedAt: string;
-  notebook?: { id: string; name: string };
+  notebook?: { id: string; name: string } | null;
 }
 
 export interface NoteSummary {

@@ -11,8 +11,8 @@ interface SearchResult {
   id: string;
   title: string;
   headline: string;
-  notebookId: string;
-  notebookName: string;
+  notebookId: string | null;
+  notebookName: string | null;
   rank: number;
   updatedAt: Date;
 }
@@ -45,7 +45,7 @@ export async function searchNotes(query: string, filters: SearchFilters) {
         'StartSel=<mark>, StopSel=</mark>, MaxWords=60, MinWords=20, MaxFragments=2'
       ) AS headline
     FROM notes n
-    JOIN notebooks nb ON nb.id = n.notebook_id
+    LEFT JOIN notebooks nb ON nb.id = n.notebook_id
     WHERE (
       setweight(to_tsvector('english', coalesce(n.title, '')), 'A') ||
       setweight(to_tsvector('english', coalesce(n.content, '')), 'B')

@@ -6,13 +6,18 @@ export async function getNotesByNotebook(notebookId: string): Promise<NoteSummar
   return data;
 }
 
+export async function getRootNotes(): Promise<NoteSummary[]> {
+  const { data } = await api.get<NoteSummary[]>('/notes/root');
+  return data;
+}
+
 export async function getNoteById(id: string): Promise<Note> {
   const { data } = await api.get<Note>(`/notes/${id}`);
   return data;
 }
 
 export async function createNote(body: {
-  notebookId: string;
+  notebookId?: string;
   content?: string;
 }): Promise<Note> {
   const { data } = await api.post<Note>('/notes', body);
@@ -31,7 +36,7 @@ export async function deleteNote(id: string): Promise<void> {
   await api.delete(`/notes/${id}`);
 }
 
-export async function moveNote(id: string, notebookId: string): Promise<Note> {
+export async function moveNote(id: string, notebookId: string | null): Promise<Note> {
   const { data } = await api.patch<Note>(`/notes/${id}/move`, { notebookId });
   return data;
 }

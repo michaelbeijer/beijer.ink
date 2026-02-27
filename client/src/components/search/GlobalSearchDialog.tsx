@@ -122,7 +122,7 @@ export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSear
                     <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <h4 className="text-sm font-medium text-slate-900 dark:text-white truncate">{result.title}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">{result.notebookName}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">{result.notebookName || 'Root'}</p>
                       <p
                         className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 [&_mark]:bg-yellow-200 dark:[&_mark]:bg-yellow-500/30 [&_mark]:text-yellow-800 dark:[&_mark]:text-yellow-200 [&_mark]:rounded-sm [&_mark]:px-0.5"
                         dangerouslySetInnerHTML={{ __html: result.headline }}

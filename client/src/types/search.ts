@@ -2,8 +2,8 @@ export interface SearchResult {
   id: string;
   title: string;
   headline: string;
-  notebookId: string;
-  notebookName: string;
+  notebookId: string | null;
+  notebookName: string | null;
   rank: number;
   updatedAt: string;
 }

@@ -1,21 +1,25 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PenLine, FolderPlus, LogOut, Sun, Moon } from 'lucide-react';
+import { PenLine, FolderPlus, FilePlus, LogOut, Sun, Moon } from 'lucide-react';
 import { getNotebooks, createNotebook, deleteNotebook, updateNotebook } from '../../api/notebooks';
+import { getRootNotes, createNote, deleteNote, moveNote } from '../../api/notes';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { flattenNotebookTree } from '../../utils/flattenNotebookTree';
 import { useTreeKeyboardNav } from '../../hooks/useTreeKeyboardNav';
 import { SidebarNotebookNode } from './SidebarNotebookNode';
+import { SidebarRootNote } from './SidebarRootNote';
 import type { Notebook } from '../../types/notebook';
 
 interface SidebarProps {
   selectedNotebookId: string | null;
+  selectedNoteId: string | null;
   onSelectNotebook: (id: string) => void;
+  onSelectRootNote: (noteId: string) => void;
   onClose?: () => void;
 }
 
-export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: SidebarProps) {
+export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, onSelectRootNote, onClose }: SidebarProps) {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -62,6 +66,33 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
       if (parentId) {
         setExpandedIds((prev) => new Set([...prev, parentId]));
       }
+    },
+  });
+
+  const { data: rootNotes = [] } = useQuery({
+    queryKey: ['notes', 'root'],
+    queryFn: getRootNotes,
+  });
+
+  const createRootNoteMutation = useMutation({
+    mutationFn: () => createNote({}),
+    onSuccess: (note) => {
+      queryClient.invalidateQueries({ queryKey: ['notes', 'root'] });
+      onSelectRootNote(note.id);
+    },
+  });
+
+  const deleteRootNoteMutation = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notes', 'root'] }),
+  });
+
+  const moveNoteToNotebookMutation = useMutation({
+    mutationFn: ({ noteId, notebookId }: { noteId: string; notebookId: string }) =>
+      moveNote(noteId, notebookId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes', 'root'] });
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
     },
   });
 
@@ -135,6 +166,21 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
     moveMutation.mutate({ id, parentId });
   }
 
+  function handleCreateRootNote() {
+    createRootNoteMutation.mutate();
+  }
+
+  function handleDeleteRootNote(id: string) {
+    if (confirm('Delete this note?')) {
+      deleteRootNoteMutation.mutate(id);
+      setContextMenuId(null);
+    }
+  }
+
+  function handleMoveNoteToNotebook(noteId: string, notebookId: string) {
+    moveNoteToNotebookMutation.mutate({ noteId, notebookId });
+  }
+
   return (
     <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
       {/* Header */}
@@ -143,13 +189,22 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
           <PenLine className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span className="font-semibold text-sm text-slate-900 dark:text-white">Beijer.ink</span>
         </div>
-        <button
-          onClick={handleCreate}
-          className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
-          title="New notebook"
-        >
-          <FolderPlus className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={handleCreateRootNote}
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+            title="New note"
+          >
+            <FilePlus className="w-4 h-4" />
+          </button>
+          <button
+            onClick={handleCreate}
+            className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+            title="New notebook"
+          >
+            <FolderPlus className="w-4 h-4" />
+          </button>
+        </div>
       </div>
 
       {/* Notebook tree */}
@@ -188,7 +243,7 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
           />
         ))}
 
-        {notebooks.length === 0 && (
+        {notebooks.length === 0 && rootNotes.length === 0 && (
           <p className="text-sm text-slate-500 text-center py-8">
             No notebooks yet.
             <br />
@@ -196,6 +251,32 @@ export function Sidebar({ selectedNotebookId, onSelectNotebook, onClose }: Sideb
               Create one
             </button>
           </p>
+        )}
+
+        {/* Root notes */}
+        {rootNotes.length > 0 && (
+          <>
+            {notebooks.length > 0 && (
+              <div className="mt-2 mb-1 px-2">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-600">
+                  Notes
+                </span>
+              </div>
+            )}
+            {rootNotes.map((note) => (
+              <SidebarRootNote
+                key={note.id}
+                note={note}
+                isSelected={note.id === selectedNoteId && selectedNotebookId === null}
+                contextMenuId={contextMenuId}
+                notebooks={notebooks}
+                onSelect={(id) => { onSelectRootNote(id); onClose?.(); }}
+                onDelete={handleDeleteRootNote}
+                onContextMenu={setContextMenuId}
+                onMoveToNotebook={handleMoveNoteToNotebook}
+              />
+            ))}
+          </>
         )}
       </div>
 

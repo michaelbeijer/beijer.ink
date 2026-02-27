@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const createNoteSchema = z.object({
   content: z.string().optional(),
-  notebookId: z.string().min(1),
+  notebookId: z.string().min(1).optional(),
 });
 
 export const updateNoteSchema = z.object({
@@ -13,5 +13,5 @@ export const updateNoteSchema = z.object({
 });
 
 export const moveNoteSchema = z.object({
-  notebookId: z.string().min(1),
+  notebookId: z.string().min(1).nullable(),
 });

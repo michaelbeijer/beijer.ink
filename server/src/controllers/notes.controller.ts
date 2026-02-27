@@ -6,6 +6,11 @@ export async function getByNotebook(req: Request, res: Response) {
   res.json(notes);
 }
 
+export async function getRoot(req: Request, res: Response) {
+  const notes = await notesService.getRootNotes();
+  res.json(notes);
+}
+
 export async function getById(req: Request, res: Response) {
   const note = await notesService.getNoteById(req.params.id);
   if (!note) {

@@ -49,6 +49,13 @@ export function AppShell() {
     setMobileView('editor');
   }, []);
 
+  const handleSelectRootNote = useCallback((noteId: string) => {
+    setSelectedNotebookId(null);
+    setSelectedNoteId(noteId);
+    setEditorSearchQuery(null);
+    setMobileView('editor');
+  }, []);
+
   const handleNoteDeleted = useCallback(() => {
     setSelectedNoteId(null);
     setMobileView('notes');
@@ -90,7 +97,9 @@ export function AppShell() {
               <div className="w-60 shrink-0">
                 <Sidebar
                   selectedNotebookId={selectedNotebookId}
+                  selectedNoteId={selectedNoteId}
                   onSelectNotebook={handleSelectNotebook}
+                  onSelectRootNote={handleSelectRootNote}
                 />
               </div>
 
@@ -173,8 +182,13 @@ export function AppShell() {
               <div className="absolute left-0 top-0 bottom-0 w-72 z-40">
                 <Sidebar
                   selectedNotebookId={selectedNotebookId}
+                  selectedNoteId={selectedNoteId}
                   onSelectNotebook={(id) => {
                     handleSelectNotebook(id);
+                    setSidebarOpen(false);
+                  }}
+                  onSelectRootNote={(id) => {
+                    handleSelectRootNote(id);
                     setSidebarOpen(false);
                   }}
                   onClose={() => setSidebarOpen(false)}
@@ -186,7 +200,9 @@ export function AppShell() {
           {mobileView === 'sidebar' && (
             <Sidebar
               selectedNotebookId={selectedNotebookId}
+              selectedNoteId={selectedNoteId}
               onSelectNotebook={handleSelectNotebook}
+              onSelectRootNote={handleSelectRootNote}
             />
           )}
 

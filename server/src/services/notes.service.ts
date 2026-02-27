@@ -29,6 +29,22 @@ export async function getNotesInNotebook(notebookId: string) {
   });
 }
 
+export async function getRootNotes() {
+  return prisma.note.findMany({
+    where: { notebookId: null },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      isPinned: true,
+      sortOrder: true,
+      updatedAt: true,
+      createdAt: true,
+    },
+    orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
+  });
+}
+
 export async function getNoteById(id: string) {
   return prisma.note.findUnique({
     where: { id },
@@ -40,7 +56,7 @@ export async function getNoteById(id: string) {
 
 export async function createNote(data: {
   content?: string;
-  notebookId: string;
+  notebookId?: string;
 }) {
   const content = data.content || '';
   const title = extractTitle(content);
@@ -79,7 +95,7 @@ export async function deleteNote(id: string) {
   await prisma.note.delete({ where: { id } });
 }
 
-export async function moveNote(id: string, notebookId: string) {
+export async function moveNote(id: string, notebookId: string | null) {
   return prisma.note.update({
     where: { id },
     data: { notebookId },
