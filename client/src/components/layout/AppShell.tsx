@@ -6,7 +6,6 @@ import { TopBar } from './TopBar';
 import { MobileNav } from './MobileNav';
 import { DragOverlayContent } from './DragOverlayContent';
 import { ResizeDivider } from './ResizeDivider';
-import { NoteListPanel } from '../notes/NoteListPanel';
 import { NoteEditor } from '../editor/NoteEditor';
 import { Scratchpad } from '../scratchpad/Scratchpad';
 import { GlobalSearchDialog } from '../search/GlobalSearchDialog';
@@ -15,7 +14,7 @@ import { useDndNotebooks } from '../../hooks/useDndNotebooks';
 import { useResizePanel } from '../../hooks/useResizePanel';
 import { getNoteById } from '../../api/notes';
 
-type MobileView = 'sidebar' | 'notes' | 'editor';
+type MobileView = 'sidebar' | 'editor';
 
 export function AppShell() {
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
@@ -42,11 +41,7 @@ export function AppShell() {
 
   const handleSelectNotebook = useCallback((id: string) => {
     setSelectedNotebookId(id);
-    if (!isDesktop) {
-      setSelectedNoteId(null);
-      setMobileView('notes');
-    }
-  }, [isDesktop]);
+  }, []);
 
   const handleSelectNote = useCallback((id: string) => {
     setSelectedNoteId(id);
@@ -63,7 +58,7 @@ export function AppShell() {
 
   const handleNoteDeleted = useCallback(() => {
     setSelectedNoteId(null);
-    setMobileView('notes');
+    setMobileView('sidebar');
   }, []);
 
   const handleSearchSelectNote = useCallback(async (noteId: string, query: string) => {
@@ -179,10 +174,7 @@ export function AppShell() {
                 <Sidebar
                   selectedNotebookId={selectedNotebookId}
                   selectedNoteId={selectedNoteId}
-                  onSelectNotebook={(id) => {
-                    handleSelectNotebook(id);
-                    setSidebarOpen(false);
-                  }}
+                  onSelectNotebook={handleSelectNotebook}
                   onSelectNote={(noteId) => {
                     handleSelectNote(noteId);
                     setSidebarOpen(false);
@@ -191,7 +183,6 @@ export function AppShell() {
                     handleSelectRootNote(id);
                     setSidebarOpen(false);
                   }}
-                  onClose={() => setSidebarOpen(false)}
                 />
               </div>
             </>
@@ -204,14 +195,6 @@ export function AppShell() {
               onSelectNotebook={handleSelectNotebook}
               onSelectNote={handleSelectNote}
               onSelectRootNote={handleSelectRootNote}
-            />
-          )}
-
-          {mobileView === 'notes' && (
-            <NoteListPanel
-              notebookId={selectedNotebookId}
-              selectedNoteId={selectedNoteId}
-              onSelectNote={handleSelectNote}
             />
           )}
 
@@ -232,7 +215,6 @@ export function AppShell() {
         <MobileNav
           activeView={mobileView}
           onChangeView={setMobileView}
-          hasNotebook={!!selectedNotebookId}
           hasNote={!!selectedNoteId}
         />
 

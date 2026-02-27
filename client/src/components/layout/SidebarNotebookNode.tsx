@@ -103,7 +103,6 @@ export function SidebarNotebookNode({
       style={{ paddingLeft: `${node.depth * 16 + 8}px` }}
       onClick={() => {
         onSelect(nb.id);
-        onClose?.();
       }}
     >
       {/* Indent guide */}

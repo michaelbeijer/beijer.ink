@@ -7,7 +7,21 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.8.2**
+Current Version: **0.9.0**
+
+---
+
+## [0.9.0] — 2026-02-27
+
+### Changed
+- **Unified mobile/desktop sidebar** — Mobile now uses the same inline-notes sidebar as desktop; tapping a notebook expands it to show notes inline, tapping a note opens the editor
+- Removed the separate NoteListPanel screen on mobile
+- Mobile bottom nav simplified to 2 tabs (Notebooks / Editor) instead of 3
+- Notebook clicks no longer close the mobile sidebar overlay — only note selection does
+
+### Removed
+- `NoteListPanel` import from mobile layout (kept in codebase for potential future use)
+- "Notes" tab from mobile bottom navigation
 
 ---
 

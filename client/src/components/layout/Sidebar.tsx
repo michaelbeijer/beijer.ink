@@ -160,11 +160,11 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     onSelect: (node) => {
       if (node.type === 'note') {
         onSelectNote(node.noteId);
+        onClose?.();
       } else {
         onSelectNotebook(node.id);
         toggleExpand(node.id);
       }
-      onClose?.();
     },
     selectedId: selectedTreeId,
   });
