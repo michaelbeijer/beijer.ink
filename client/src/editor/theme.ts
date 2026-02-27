@@ -17,7 +17,7 @@ const lightHighlight = HighlightStyle.define([
   { tag: tags.heading5, fontWeight: '600', color: '#334155' },
   { tag: tags.heading6, fontWeight: '600', color: '#475569' },
   // Inline formatting
-  { tag: tags.strong, fontWeight: 'bold' },
+  { tag: tags.strong, fontWeight: 'bold', color: '#0f172a' },
   { tag: tags.emphasis, fontStyle: 'italic' },
   { tag: tags.strikethrough, textDecoration: 'line-through', color: '#94a3b8' },
   // Code
@@ -51,7 +51,7 @@ const darkHighlight = HighlightStyle.define([
   { tag: tags.heading5, fontWeight: '600', color: '#cbd5e1' },
   { tag: tags.heading6, fontWeight: '600', color: '#94a3b8' },
   // Inline formatting
-  { tag: tags.strong, fontWeight: 'bold' },
+  { tag: tags.strong, fontWeight: 'bold', color: '#f1f5f9' },
   { tag: tags.emphasis, fontStyle: 'italic' },
   { tag: tags.strikethrough, textDecoration: 'line-through', color: '#64748b' },
   // Code

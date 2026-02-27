@@ -7,7 +7,14 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.8.0**
+Current Version: **0.8.1**
+
+---
+
+## [0.8.1] — 2026-02-27
+
+### Fixed
+- Bold text inside lists and blockquotes now renders at full brightness instead of inheriting the dimmer list/quote color
 
 ---
 
