@@ -137,9 +137,9 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     }
   }, [note, setDoc]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Auto-focus on load (only in edit modes)
+  // Auto-focus on load (only in edit modes, skip on touch devices to avoid keyboard popup)
   useEffect(() => {
-    if (note && editorMode !== 'preview') focus();
+    if (note && editorMode !== 'preview' && !('ontouchstart' in window)) focus();
   }, [note, focus, editorMode]);
 
   // Escape exits fullscreen

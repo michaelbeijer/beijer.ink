@@ -7,7 +7,14 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.9.0**
+Current Version: **0.9.1**
+
+---
+
+## [0.9.1] — 2026-02-27
+
+### Fixed
+- Editor no longer auto-focuses on touch devices, preventing the keyboard from popping up immediately when opening a note on mobile
 
 ---
 
