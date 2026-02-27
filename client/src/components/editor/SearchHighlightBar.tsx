@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import { ChevronUp, ChevronDown, X } from 'lucide-react';
 
 interface SearchHighlightBarProps {
@@ -17,6 +18,12 @@ export function SearchHighlightBar({
   onPrev,
   onClose,
 }: SearchHighlightBarProps) {
+  const barRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    barRef.current?.focus();
+  }, []);
+
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Escape') {
       e.preventDefault();
@@ -32,7 +39,8 @@ export function SearchHighlightBar({
 
   return (
     <div
-      className="absolute top-2 right-4 z-10 flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg px-3 py-1.5 text-sm"
+      ref={barRef}
+      className="absolute top-2 right-4 z-10 flex items-center gap-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg px-3 py-1.5 text-sm focus:outline-none"
       onKeyDown={handleKeyDown}
       tabIndex={-1}
     >
