@@ -5,7 +5,7 @@ interface UseTreeKeyboardNavOptions {
   nodes: FlatTreeNode[];
   expandedIds: Set<string>;
   toggleExpand: (id: string) => void;
-  onSelect: (id: string) => void;
+  onSelect: (node: FlatTreeNode) => void;
   selectedId: string | null;
 }
 
@@ -26,8 +26,9 @@ export function useTreeKeyboardNav({
       const current = currentIndex >= 0 ? nodes[currentIndex] : null;
 
       function moveTo(id: string) {
+        const node = nodes.find((n) => n.id === id);
         setFocusedId(id);
-        onSelect(id);
+        if (node) onSelect(node);
         document.getElementById(`treeitem-${id}`)?.scrollIntoView({ block: 'nearest' });
       }
 
@@ -46,10 +47,9 @@ export function useTreeKeyboardNav({
         }
         case 'ArrowRight': {
           e.preventDefault();
-          if (current?.hasChildren && !current.isExpanded) {
+          if (current?.type === 'notebook' && current.hasChildren && !current.isExpanded) {
             toggleExpand(current.id);
-          } else if (current?.hasChildren && current.isExpanded) {
-            // Move to first child
+          } else if (current?.type === 'notebook' && current.hasChildren && current.isExpanded) {
             const childIndex = currentIndex + 1;
             if (childIndex < nodes.length && nodes[childIndex].depth > current.depth) {
               moveTo(nodes[childIndex].id);
@@ -59,17 +59,21 @@ export function useTreeKeyboardNav({
         }
         case 'ArrowLeft': {
           e.preventDefault();
-          if (current?.hasChildren && expandedIds.has(current.id)) {
+          if (current?.type === 'notebook' && current.hasChildren && expandedIds.has(current.id)) {
             toggleExpand(current.id);
           } else if (current?.parentId) {
-            moveTo(current.parentId);
+            const parentNode = nodes.find((n) => n.id === current.parentId);
+            if (parentNode) moveTo(parentNode.id);
           }
           break;
         }
         case 'Enter':
         case ' ': {
           e.preventDefault();
-          if (focusedId) onSelect(focusedId);
+          if (focusedId) {
+            const node = nodes.find((n) => n.id === focusedId);
+            if (node) onSelect(node);
+          }
           break;
         }
         case 'Home': {
@@ -91,10 +95,8 @@ export function useTreeKeyboardNav({
     [nodes, focusedId, expandedIds, toggleExpand, onSelect]
   );
 
-  // On focus: start from the currently selected item
   const handleFocus = useCallback(
     (e: React.FocusEvent) => {
-      // Ignore focus moving between children within the same container
       if (e.currentTarget.contains(e.relatedTarget as Node)) return;
 
       if (selectedId && nodes.some((n) => n.id === selectedId)) {
@@ -106,7 +108,6 @@ export function useTreeKeyboardNav({
     [selectedId, nodes]
   );
 
-  // On blur: clear focus ring when focus leaves the tree
   const handleBlur = useCallback(
     (e: React.FocusEvent) => {
       if (e.currentTarget.contains(e.relatedTarget as Node)) return;

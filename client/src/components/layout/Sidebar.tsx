@@ -6,8 +6,10 @@ import { getRootNotes, createNote, deleteNote, moveNote } from '../../api/notes'
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { flattenNotebookTree } from '../../utils/flattenNotebookTree';
+import { useNotebookNotes } from '../../hooks/useNotebookNotes';
 import { useTreeKeyboardNav } from '../../hooks/useTreeKeyboardNav';
 import { SidebarNotebookNode } from './SidebarNotebookNode';
+import { SidebarNoteNode } from './SidebarNoteNode';
 import { SidebarRootNote } from './SidebarRootNote';
 import type { Notebook } from '../../types/notebook';
 
@@ -15,11 +17,13 @@ interface SidebarProps {
   selectedNotebookId: string | null;
   selectedNoteId: string | null;
   onSelectNotebook: (id: string) => void;
+  onSelectNote: (noteId: string) => void;
   onSelectRootNote: (noteId: string) => void;
+  autoExpandNotebookId?: string | null;
   onClose?: () => void;
 }
 
-export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, onSelectRootNote, onClose }: SidebarProps) {
+export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, onSelectNote, onSelectRootNote, autoExpandNotebookId, onClose }: SidebarProps) {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -38,7 +42,6 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     mutationFn: createNotebook,
     onSuccess: (nb) => {
       queryClient.invalidateQueries({ queryKey: ['notebooks'] });
-      // Auto-expand parent if created as child
       if (nb.parentId) {
         setExpandedIds((prev) => new Set([...prev, nb.parentId!]));
       }
@@ -82,17 +85,35 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     },
   });
 
+  const createNoteInNotebookMutation = useMutation({
+    mutationFn: (notebookId: string) => createNote({ notebookId }),
+    onSuccess: (note, notebookId) => {
+      queryClient.invalidateQueries({ queryKey: ['notes', notebookId] });
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+      setExpandedIds((prev) => new Set([...prev, notebookId]));
+      onSelectNote(note.id);
+    },
+  });
+
+  const deleteNoteMutation = useMutation({
+    mutationFn: deleteNote,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+    },
+  });
+
   const deleteRootNoteMutation = useMutation({
     mutationFn: deleteNote,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['notes', 'root'] }),
   });
 
-  const moveNoteToNotebookMutation = useMutation({
-    mutationFn: ({ noteId, notebookId }: { noteId: string; notebookId: string }) =>
+  const moveNoteMutation = useMutation({
+    mutationFn: ({ noteId, notebookId }: { noteId: string; notebookId: string | null }) =>
       moveNote(noteId, notebookId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['notes', 'root'] });
       queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
     },
   });
 
@@ -105,20 +126,46 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     });
   }, []);
 
+  // Auto-expand notebook (e.g. when navigating from search)
+  useEffect(() => {
+    if (autoExpandNotebookId) {
+      setExpandedIds((prev) => {
+        if (prev.has(autoExpandNotebookId)) return prev;
+        return new Set([...prev, autoExpandNotebookId]);
+      });
+    }
+  }, [autoExpandNotebookId]);
+
+  const { notesMap } = useNotebookNotes(expandedIds);
+
   const flatNodes = useMemo(
-    () => flattenNotebookTree(notebooks, expandedIds),
-    [notebooks, expandedIds]
+    () => flattenNotebookTree(notebooks, expandedIds, notesMap),
+    [notebooks, expandedIds, notesMap]
   );
+
+  // Determine which ID is currently "selected" in the tree for keyboard nav
+  const selectedTreeId = useMemo(() => {
+    if (selectedNoteId) {
+      // Check if this note is in the flat tree (as a notebook note)
+      const noteNode = flatNodes.find((n) => n.type === 'note' && n.noteId === selectedNoteId);
+      if (noteNode) return noteNode.id;
+    }
+    return selectedNotebookId;
+  }, [selectedNoteId, selectedNotebookId, flatNodes]);
 
   const { focusedId, setFocusedId, handleKeyDown, handleFocus, handleBlur } = useTreeKeyboardNav({
     nodes: flatNodes,
     expandedIds,
     toggleExpand,
-    onSelect: (id) => {
-      onSelectNotebook(id);
+    onSelect: (node) => {
+      if (node.type === 'note') {
+        onSelectNote(node.noteId);
+      } else {
+        toggleExpand(node.id);
+      }
       onClose?.();
     },
-    selectedId: selectedNotebookId,
+    selectedId: selectedTreeId,
   });
 
   // Close context menu on outside click
@@ -155,7 +202,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     }
   }
 
-  function handleDelete(id: string) {
+  function handleDeleteNotebook(id: string) {
     if (confirm('Delete this notebook and all its notes?')) {
       deleteMutation.mutate(id);
       setContextMenuId(null);
@@ -170,6 +217,17 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     createRootNoteMutation.mutate();
   }
 
+  function handleCreateNoteInNotebook(notebookId: string) {
+    createNoteInNotebookMutation.mutate(notebookId);
+  }
+
+  function handleDeleteNote(noteId: string) {
+    if (confirm('Delete this note?')) {
+      deleteNoteMutation.mutate(noteId);
+      setContextMenuId(null);
+    }
+  }
+
   function handleDeleteRootNote(id: string) {
     if (confirm('Delete this note?')) {
       deleteRootNoteMutation.mutate(id);
@@ -178,11 +236,12 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
   }
 
   function handleMoveNoteToNotebook(noteId: string, notebookId: string) {
-    moveNoteToNotebookMutation.mutate({ noteId, notebookId });
+    // Empty string means "move to root"
+    moveNoteMutation.mutate({ noteId, notebookId: notebookId || null });
   }
 
   return (
-    <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800">
+    <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-200 dark:border-slate-800">
         <div className="flex items-center gap-2">
@@ -218,30 +277,54 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        {flatNodes.map((node) => (
-          <SidebarNotebookNode
-            key={node.id}
-            node={node}
-            isSelected={node.id === selectedNotebookId}
-            isFocused={node.id === focusedId}
-            isDropTarget={false}
-            editingId={editingId}
-            editName={editName}
-            contextMenuId={contextMenuId}
-            notebooks={notebooks}
-            onSelect={(id: string) => { onSelectNotebook(id); setFocusedId(id); }}
-            onToggleExpand={toggleExpand}
-            onStartRename={handleStartRename}
-            onRename={handleRename}
-            onCancelRename={() => setEditingId(null)}
-            onDelete={handleDelete}
-            onContextMenu={setContextMenuId}
-            onEditNameChange={setEditName}
-            onMove={handleMove}
-            onCreateChild={handleCreateChild}
-            onClose={onClose}
-          />
-        ))}
+        {flatNodes.map((node) => {
+          if (node.type === 'note') {
+            return (
+              <SidebarNoteNode
+                key={node.id}
+                node={node}
+                isSelected={node.noteId === selectedNoteId}
+                isFocused={node.id === focusedId}
+                contextMenuId={contextMenuId}
+                notebooks={notebooks}
+                onSelect={(nbId, noteId) => {
+                  onSelectNote(noteId);
+                  setFocusedId(node.id);
+                  onClose?.();
+                }}
+                onDelete={handleDeleteNote}
+                onContextMenu={setContextMenuId}
+                onMoveToNotebook={handleMoveNoteToNotebook}
+                onClose={onClose}
+              />
+            );
+          }
+          return (
+            <SidebarNotebookNode
+              key={node.id}
+              node={node}
+              isSelected={node.id === selectedNotebookId}
+              isFocused={node.id === focusedId}
+              isDropTarget={false}
+              editingId={editingId}
+              editName={editName}
+              contextMenuId={contextMenuId}
+              notebooks={notebooks}
+              onSelect={(id: string) => { toggleExpand(id); setFocusedId(id); }}
+              onToggleExpand={toggleExpand}
+              onStartRename={handleStartRename}
+              onRename={handleRename}
+              onCancelRename={() => setEditingId(null)}
+              onDelete={handleDeleteNotebook}
+              onContextMenu={setContextMenuId}
+              onEditNameChange={setEditName}
+              onMove={handleMove}
+              onCreateChild={handleCreateChild}
+              onCreateNote={handleCreateNoteInNotebook}
+              onClose={onClose}
+            />
+          );
+        })}
 
         {notebooks.length === 0 && rootNotes.length === 0 && (
           <p className="text-sm text-slate-500 text-center py-8">

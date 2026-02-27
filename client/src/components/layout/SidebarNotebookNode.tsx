@@ -10,13 +10,14 @@ import {
   Edit3,
   FolderInput,
   FolderPlus,
+  FilePlus,
 } from 'lucide-react';
-import type { FlatTreeNode } from '../../utils/flattenNotebookTree';
+import type { FlatNotebookNode } from '../../utils/flattenNotebookTree';
 import type { Notebook } from '../../types/notebook';
 import { isDescendant } from '../../utils/isDescendant';
 
 interface SidebarNotebookNodeProps {
-  node: FlatTreeNode;
+  node: FlatNotebookNode;
   isSelected: boolean;
   isFocused: boolean;
   isDropTarget: boolean;
@@ -34,6 +35,7 @@ interface SidebarNotebookNodeProps {
   onEditNameChange: (name: string) => void;
   onMove: (id: string, parentId: string | null) => void;
   onCreateChild: (parentId: string) => void;
+  onCreateNote: (notebookId: string) => void;
   onClose?: () => void;
 }
 
@@ -56,6 +58,7 @@ export function SidebarNotebookNode({
   onEditNameChange,
   onMove,
   onCreateChild,
+  onCreateNote,
   onClose,
 }: SidebarNotebookNodeProps) {
   const nb = node.notebook;
@@ -245,6 +248,17 @@ export function SidebarNotebookNode({
                 <div className="border-t border-slate-100 dark:border-slate-700 mx-0 my-0.5" />
               </div>
             )}
+
+            <button
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"
+              onClick={(e) => {
+                e.stopPropagation();
+                onCreateNote(nb.id);
+                onContextMenu(null);
+              }}
+            >
+              <FilePlus className="w-3.5 h-3.5" /> New note
+            </button>
 
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700"

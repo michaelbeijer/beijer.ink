@@ -5,12 +5,14 @@ import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { MobileNav } from './MobileNav';
 import { DragOverlayContent } from './DragOverlayContent';
+import { ResizeDivider } from './ResizeDivider';
 import { NoteListPanel } from '../notes/NoteListPanel';
 import { NoteEditor } from '../editor/NoteEditor';
 import { Scratchpad } from '../scratchpad/Scratchpad';
 import { GlobalSearchDialog } from '../search/GlobalSearchDialog';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useDndNotebooks } from '../../hooks/useDndNotebooks';
+import { useResizePanel } from '../../hooks/useResizePanel';
 import { getNoteById } from '../../api/notes';
 
 type MobileView = 'sidebar' | 'notes' | 'editor';
@@ -27,6 +29,7 @@ export function AppShell() {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
   const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
+  const { width: sidebarWidth, handleMouseDown: handleResizeMouseDown } = useResizePanel();
 
   const {
     sensors,
@@ -39,9 +42,11 @@ export function AppShell() {
 
   const handleSelectNotebook = useCallback((id: string) => {
     setSelectedNotebookId(id);
-    setSelectedNoteId(null);
-    setMobileView('notes');
-  }, []);
+    if (!isDesktop) {
+      setSelectedNoteId(null);
+      setMobileView('notes');
+    }
+  }, [isDesktop]);
 
   const handleSelectNote = useCallback((id: string) => {
     setSelectedNoteId(id);
@@ -93,26 +98,17 @@ export function AppShell() {
         <div className="h-screen flex bg-white dark:bg-slate-950">
           {!isFullscreen && (
             <>
-              {/* Sidebar */}
-              <div className="w-60 shrink-0">
+              <div className="shrink-0" style={{ width: sidebarWidth }}>
                 <Sidebar
                   selectedNotebookId={selectedNotebookId}
                   selectedNoteId={selectedNoteId}
                   onSelectNotebook={handleSelectNotebook}
+                  onSelectNote={handleSelectNote}
                   onSelectRootNote={handleSelectRootNote}
+                  autoExpandNotebookId={selectedNotebookId}
                 />
               </div>
-
-              {/* Note list — only show when a notebook is selected */}
-              {selectedNotebookId && (
-                <div className="w-72 shrink-0">
-                  <NoteListPanel
-                    notebookId={selectedNotebookId}
-                    selectedNoteId={selectedNoteId}
-                    onSelectNote={handleSelectNote}
-                  />
-                </div>
-              )}
+              <ResizeDivider onMouseDown={handleResizeMouseDown} />
             </>
           )}
 
@@ -187,6 +183,10 @@ export function AppShell() {
                     handleSelectNotebook(id);
                     setSidebarOpen(false);
                   }}
+                  onSelectNote={(noteId) => {
+                    handleSelectNote(noteId);
+                    setSidebarOpen(false);
+                  }}
                   onSelectRootNote={(id) => {
                     handleSelectRootNote(id);
                     setSidebarOpen(false);
@@ -202,6 +202,7 @@ export function AppShell() {
               selectedNotebookId={selectedNotebookId}
               selectedNoteId={selectedNoteId}
               onSelectNotebook={handleSelectNotebook}
+              onSelectNote={handleSelectNote}
               onSelectRootNote={handleSelectRootNote}
             />
           )}

@@ -7,7 +7,23 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.7.0**
+Current Version: **0.8.0**
+
+---
+
+## [0.8.0] — 2026-02-27
+
+### Added
+- **Inline notes in sidebar** — Expanding a notebook now shows its notes directly in the sidebar tree (like a file explorer), eliminating the separate note list panel on desktop
+- **New note from notebook menu** — Right-click a notebook and choose "New note" to create a note inside it
+- **Note context menu in sidebar** — Right-click notes in the tree to move them between notebooks or delete them
+- **Resizable sidebar** — Drag the divider between sidebar and editor to resize (180–400px range, persisted to localStorage)
+
+### Changed
+- Desktop layout reduced from 3 columns (sidebar + note list + editor) to 2 columns (sidebar + editor)
+- Sidebar tree now renders a discriminated union of notebook and note nodes with lazy-loaded notes per expanded notebook
+- Keyboard navigation (Arrow keys, Home/End, Enter) works across both notebooks and notes in the tree
+- ArrowLeft on a note navigates to its parent notebook; ArrowRight on notes is a no-op
 
 ---
 
