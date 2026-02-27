@@ -23,6 +23,7 @@ A personal note-taking web app with inline markdown styling, full-text search, a
 - **Fullscreen mode** — Expand the editor to fill the entire page; exit with Escape
 - **Global search** — Weighted PostgreSQL FTS across all notes (title boosted over content), with highlighted result snippets
 - **Notebooks** — Organize notes in a hierarchical tree with right-click context menu for moving, renaming, and creating sub-notebooks
+- **Root notes** — Create notes outside of any notebook; they appear in the sidebar below the notebook tree and open directly in the editor
 - **Scratchpad** — Instant-access editor on app load for quick jotting; auto-saved and always available
 - **Auto-save** — 1-second debounce, saves in the background
 - **Responsive layout** — 3-column desktop, 2-column tablet, single-column mobile with bottom navigation
@@ -123,6 +124,7 @@ All endpoints under `/api`, JWT-protected except login.
 | `POST` | `/api/notebooks` | Create notebook |
 | `PATCH` | `/api/notebooks/:id` | Update notebook |
 | `DELETE` | `/api/notebooks/:id` | Delete notebook |
+| `GET` | `/api/notes/root` | List root-level notes (no notebook) |
 | `GET` | `/api/notes/notebook/:notebookId` | List notes in notebook |
 | `GET` | `/api/notes/:id` | Get single note |
 | `POST` | `/api/notes` | Create note |

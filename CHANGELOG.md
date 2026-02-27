@@ -7,7 +7,22 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.6.0**
+Current Version: **0.7.0**
+
+---
+
+## [0.7.0] — 2026-02-27
+
+### Added
+- **Root-level notes** — Notes can now exist outside of any notebook, appearing as individual items in the sidebar below the notebook tree
+- **New note button** — FilePlus button in the sidebar header creates a root-level note instantly
+- **Root note context menu** — Right-click to move a root note into a notebook or delete it
+- **In-editor search highlighting** — Clicking a global search result highlights all matches in the editor with a floating navigation bar (arrow keys or prev/next buttons to jump between matches)
+
+### Changed
+- `notebookId` is now optional in the database schema — notes without a notebook are stored with `NULL` notebook_id
+- Search uses `LEFT JOIN` so root notes appear in global search results (shown as "Root")
+- Search highlight bar auto-focuses on mount so arrow keys work immediately
 
 ---
 
