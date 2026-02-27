@@ -116,6 +116,27 @@
   color: #475569;
 }
 
+/* ── Search highlighting ── */
+.cm-search-match {
+  background-color: rgba(250, 204, 21, 0.3);
+  border-radius: 2px;
+}
+
+.cm-search-match-active {
+  background-color: rgba(250, 204, 21, 0.6);
+  outline: 1px solid rgba(250, 204, 21, 0.8);
+  border-radius: 2px;
+}
+
+.dark .cm-search-match {
+  background-color: rgba(250, 204, 21, 0.15);
+}
+
+.dark .cm-search-match-active {
+  background-color: rgba(250, 204, 21, 0.35);
+  outline-color: rgba(250, 204, 21, 0.5);
+}
+
 /* ── Markdown preview ── */
 .markdown-preview {
   font-size: 15px;

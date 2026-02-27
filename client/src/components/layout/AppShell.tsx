@@ -19,6 +19,7 @@ export function AppShell() {
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [editorSearchQuery, setEditorSearchQuery] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobileView>('editor');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -44,6 +45,7 @@ export function AppShell() {
 
   const handleSelectNote = useCallback((id: string) => {
     setSelectedNoteId(id);
+    setEditorSearchQuery(null);
     setMobileView('editor');
   }, []);
 
@@ -52,13 +54,18 @@ export function AppShell() {
     setMobileView('notes');
   }, []);
 
-  const handleSearchSelectNote = useCallback(async (noteId: string) => {
+  const handleSearchSelectNote = useCallback(async (noteId: string, query: string) => {
     const note = await getNoteById(noteId);
     if (note) {
       setSelectedNotebookId(note.notebookId);
       setSelectedNoteId(noteId);
+      setEditorSearchQuery(query);
       setMobileView('editor');
     }
+  }, []);
+
+  const handleClearEditorSearch = useCallback(() => {
+    setEditorSearchQuery(null);
   }, []);
 
   const handleOpenSearch = useCallback(() => {
@@ -120,6 +127,8 @@ export function AppShell() {
                   onNoteDeleted={handleNoteDeleted}
                   isFullscreen={isFullscreen}
                   onToggleFullscreen={toggleFullscreen}
+                  searchQuery={editorSearchQuery}
+                  onClearSearch={handleClearEditorSearch}
                 />
               ) : (
                 <Scratchpad />
@@ -191,7 +200,12 @@ export function AppShell() {
 
           {mobileView === 'editor' && (
             selectedNoteId ? (
-              <NoteEditor noteId={selectedNoteId} onNoteDeleted={handleNoteDeleted} />
+              <NoteEditor
+                noteId={selectedNoteId}
+                onNoteDeleted={handleNoteDeleted}
+                searchQuery={editorSearchQuery}
+                onClearSearch={handleClearEditorSearch}
+              />
             ) : (
               <Scratchpad />
             )

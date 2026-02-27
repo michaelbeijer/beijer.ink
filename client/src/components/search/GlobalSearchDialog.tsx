@@ -6,7 +6,7 @@ import type { SearchResult } from '../../types/search';
 interface GlobalSearchDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSelectNote: (noteId: string) => void;
+  onSelectNote: (noteId: string, query: string) => void;
 }
 
 export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSearchDialogProps) {
@@ -113,7 +113,7 @@ export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSear
                 <button
                   key={result.id}
                   onClick={() => {
-                    onSelectNote(result.id);
+                    onSelectNote(result.id, query);
                     onClose();
                   }}
                   className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800/50"

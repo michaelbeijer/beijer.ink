@@ -10,6 +10,7 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { stripMarkdown } from '../../utils/stripMarkdown';
 import { MarkdownToolbar } from './MarkdownToolbar';
 import { MarkdownPreview } from './MarkdownPreview';
+import { SearchHighlightBar } from './SearchHighlightBar';
 
 const TOOLBAR_KEY = 'beijer-ink-toolbar';
 const MODE_KEY = 'beijer-ink-editor-mode';
@@ -21,9 +22,11 @@ interface NoteEditorProps {
   onNoteDeleted?: () => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  searchQuery?: string | null;
+  onClearSearch?: () => void;
 }
 
-export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullscreen }: NoteEditorProps) {
+export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullscreen, searchQuery, onClearSearch }: NoteEditorProps) {
   const queryClient = useQueryClient();
   const { theme } = useTheme();
   const { save } = useAutoSave(noteId);
@@ -38,11 +41,15 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
   const [editorMode, setEditorMode] = useState<EditorMode>(() => {
     return (localStorage.getItem(MODE_KEY) as EditorMode) || 'edit';
   });
+  const [searchBar, setSearchBar] = useState<{ query: string; matchCount: number; currentIndex: number } | null>(null);
+  const pendingSearchRef = useRef<string | null>(null);
 
   const handleChange = useCallback(
     (value: string) => {
       setCharCount(value.length);
       setPreviewContent(value);
+      // User started typing — clear search highlights
+      setSearchBar(null);
       if (!isLoadingRef.current) {
         const firstLine = stripMarkdown(value.split('\n')[0]?.trim() || '') || 'Untitled';
         queryClient.setQueriesData<NoteSummary[]>(
@@ -58,7 +65,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     [noteId, queryClient]
   );
 
-  const { containerRef, view, setDoc, focus } = useCodeMirror({
+  const { containerRef, view, setDoc, focus, setSearch, clearSearch, getSearchState, goToMatch, nextMatch, prevMatch } = useCodeMirror({
     onChange: handleChange,
     placeholder: 'Start writing...',
     dark: theme === 'dark',
@@ -87,6 +94,35 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     },
   });
 
+  // Stash incoming search query so we can apply it after content loads
+  useEffect(() => {
+    if (searchQuery) {
+      pendingSearchRef.current = searchQuery;
+      // If the note is already loaded, apply search immediately
+      if (note) {
+        applyPendingSearch();
+      }
+    }
+  }, [searchQuery]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  function applyPendingSearch() {
+    const query = pendingSearchRef.current;
+    if (!query) return;
+    pendingSearchRef.current = null;
+    queueMicrotask(() => {
+      setSearch(query);
+      const state = getSearchState();
+      setSearchBar({
+        query,
+        matchCount: state.matches.length,
+        currentIndex: state.currentIndex,
+      });
+      if (state.matches.length > 0) {
+        goToMatch(0);
+      }
+    });
+  }
+
   // Load note content into CodeMirror
   useEffect(() => {
     if (note) {
@@ -95,8 +131,11 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
       setCharCount((note.content || '').length);
       setPreviewContent(note.content || '');
       isLoadingRef.current = false;
+
+      // Apply pending search after document is set
+      applyPendingSearch();
     }
-  }, [note, setDoc]);
+  }, [note, setDoc]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Auto-focus on load (only in edit modes)
   useEffect(() => {
@@ -127,6 +166,24 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
     setEditorMode(mode);
     localStorage.setItem(MODE_KEY, mode);
   }, []);
+
+  const handleDismissSearch = useCallback(() => {
+    clearSearch();
+    setSearchBar(null);
+    onClearSearch?.();
+  }, [clearSearch, onClearSearch]);
+
+  const handleNextMatch = useCallback(() => {
+    nextMatch();
+    const state = getSearchState();
+    setSearchBar((prev) => prev ? { ...prev, currentIndex: state.currentIndex, matchCount: state.matches.length } : null);
+  }, [nextMatch, getSearchState]);
+
+  const handlePrevMatch = useCallback(() => {
+    prevMatch();
+    const state = getSearchState();
+    setSearchBar((prev) => prev ? { ...prev, currentIndex: state.currentIndex, matchCount: state.matches.length } : null);
+  }, [prevMatch, getSearchState]);
 
   const showEditor = editorMode === 'edit' || editorMode === 'split';
   const showPreview = editorMode === 'preview' || editorMode === 'split';
@@ -214,7 +271,19 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
       {showToolbar && showEditor && <MarkdownToolbar view={view} />}
 
       {/* Editor / Preview area */}
-      <div className="flex-1 min-h-0 flex overflow-hidden">
+      <div className="flex-1 min-h-0 flex overflow-hidden relative">
+        {/* Search highlight bar */}
+        {searchBar && showEditor && (
+          <SearchHighlightBar
+            query={searchBar.query}
+            matchCount={searchBar.matchCount}
+            currentIndex={searchBar.currentIndex}
+            onNext={handleNextMatch}
+            onPrev={handlePrevMatch}
+            onClose={handleDismissSearch}
+          />
+        )}
+
         {/* Editor — always mounted to preserve EditorView state, hidden in preview mode */}
         <div
           ref={containerRef}
