@@ -161,6 +161,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
       if (node.type === 'note') {
         onSelectNote(node.noteId);
       } else {
+        onSelectNotebook(node.id);
         toggleExpand(node.id);
       }
       onClose?.();
@@ -310,7 +311,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
               editName={editName}
               contextMenuId={contextMenuId}
               notebooks={notebooks}
-              onSelect={(id: string) => { toggleExpand(id); setFocusedId(id); }}
+              onSelect={(id: string) => { onSelectNotebook(id); toggleExpand(id); setFocusedId(id); }}
               onToggleExpand={toggleExpand}
               onStartRename={handleStartRename}
               onRename={handleRename}

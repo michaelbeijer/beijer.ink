@@ -7,7 +7,14 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.8.1**
+Current Version: **0.8.2**
+
+---
+
+## [0.8.2] — 2026-02-27
+
+### Fixed
+- Clicking a notebook on mobile now navigates to the note list instead of closing the sidebar without action
 
 ---
 
