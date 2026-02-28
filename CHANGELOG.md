@@ -7,7 +7,16 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.9.1**
+Current Version: **0.10.0**
+
+---
+
+## [0.10.0] — 2026-02-28
+
+### Added
+- **Settings dialog** — Accessible via gear icon in the sidebar footer, opens a modal overlay
+- **Change password** — Settings dialog includes a password change form with current/new/confirm fields, client-side validation (min 8 chars, match confirmation), and server-side verification
+- `PUT /api/auth/password` endpoint with Zod validation and bcrypt hashing
 
 ---
 

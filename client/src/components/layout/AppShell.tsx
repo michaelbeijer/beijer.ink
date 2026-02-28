@@ -9,6 +9,7 @@ import { ResizeDivider } from './ResizeDivider';
 import { NoteEditor } from '../editor/NoteEditor';
 import { Scratchpad } from '../scratchpad/Scratchpad';
 import { GlobalSearchDialog } from '../search/GlobalSearchDialog';
+import { SettingsDialog } from '../settings/SettingsDialog';
 import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useDndNotebooks } from '../../hooks/useDndNotebooks';
 import { useResizePanel } from '../../hooks/useResizePanel';
@@ -20,6 +21,7 @@ export function AppShell() {
   const [selectedNotebookId, setSelectedNotebookId] = useState<string | null>(null);
   const [selectedNoteId, setSelectedNoteId] = useState<string | null>(null);
   const [showSearch, setShowSearch] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editorSearchQuery, setEditorSearchQuery] = useState<string | null>(null);
   const [mobileView, setMobileView] = useState<MobileView>('editor');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -101,6 +103,7 @@ export function AppShell() {
                   onSelectNote={handleSelectNote}
                   onSelectRootNote={handleSelectRootNote}
                   autoExpandNotebookId={selectedNotebookId}
+                  onOpenSettings={() => setShowSettings(true)}
                 />
               </div>
               <ResizeDivider onMouseDown={handleResizeMouseDown} />
@@ -140,6 +143,10 @@ export function AppShell() {
             isOpen={showSearch}
             onClose={() => setShowSearch(false)}
             onSelectNote={handleSearchSelectNote}
+          />
+          <SettingsDialog
+            isOpen={showSettings}
+            onClose={() => setShowSettings(false)}
           />
         </div>
 
@@ -183,6 +190,7 @@ export function AppShell() {
                     handleSelectRootNote(id);
                     setSidebarOpen(false);
                   }}
+                  onOpenSettings={() => { setShowSettings(true); setSidebarOpen(false); }}
                 />
               </div>
             </>
@@ -195,6 +203,7 @@ export function AppShell() {
               onSelectNotebook={handleSelectNotebook}
               onSelectNote={handleSelectNote}
               onSelectRootNote={handleSelectRootNote}
+              onOpenSettings={() => setShowSettings(true)}
             />
           )}
 
@@ -222,6 +231,10 @@ export function AppShell() {
           isOpen={showSearch}
           onClose={() => setShowSearch(false)}
           onSelectNote={handleSearchSelectNote}
+        />
+        <SettingsDialog
+          isOpen={showSettings}
+          onClose={() => setShowSettings(false)}
         />
       </div>
 

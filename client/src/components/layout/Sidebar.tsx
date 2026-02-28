@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PenLine, FolderPlus, FilePlus, LogOut, Sun, Moon } from 'lucide-react';
+import { PenLine, FolderPlus, FilePlus, LogOut, Sun, Moon, Settings } from 'lucide-react';
 import { getNotebooks, createNotebook, deleteNotebook, updateNotebook } from '../../api/notebooks';
 import { getRootNotes, createNote, deleteNote, moveNote } from '../../api/notes';
 import { useAuth } from '../../contexts/AuthContext';
@@ -20,10 +20,11 @@ interface SidebarProps {
   onSelectNote: (noteId: string) => void;
   onSelectRootNote: (noteId: string) => void;
   autoExpandNotebookId?: string | null;
+  onOpenSettings?: () => void;
   onClose?: () => void;
 }
 
-export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, onSelectNote, onSelectRootNote, autoExpandNotebookId, onClose }: SidebarProps) {
+export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, onSelectNote, onSelectRootNote, autoExpandNotebookId, onOpenSettings, onClose }: SidebarProps) {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -372,6 +373,12 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         >
           {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           {theme === 'dark' ? 'Light mode' : 'Dark mode'}
+        </button>
+        <button
+          onClick={onOpenSettings}
+          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
+        >
+          <Settings className="w-4 h-4" /> Settings
         </button>
         <button
           onClick={logout}

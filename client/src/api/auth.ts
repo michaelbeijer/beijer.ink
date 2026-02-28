@@ -13,3 +13,7 @@ export async function verifyToken(): Promise<boolean> {
     return false;
   }
 }
+
+export async function changePassword(currentPassword: string, newPassword: string): Promise<void> {
+  await api.put('/auth/password', { currentPassword, newPassword });
+}
