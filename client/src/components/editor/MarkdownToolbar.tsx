@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   Bold,
   Italic,
@@ -11,8 +12,11 @@ import {
   Quote,
   Minus,
   Strikethrough,
+  Table,
+  HelpCircle,
 } from 'lucide-react';
 import type { EditorView } from '@codemirror/view';
+import { MarkdownCheatSheet } from './MarkdownCheatSheet';
 
 interface MarkdownToolbarProps {
   view: React.RefObject<EditorView | null>;
@@ -122,6 +126,11 @@ const actions: ToolbarAction[] = [
     action: (v) => insertAtLineStart(v, '> '),
   },
   {
+    icon: Table,
+    title: 'Table',
+    action: (v) => insertBlock(v, '\n| Header | Header | Header |\n| ------ | ------ | ------ |\n| Cell   | Cell   | Cell   |\n| Cell   | Cell   | Cell   |\n'),
+  },
+  {
     icon: Minus,
     title: 'Horizontal rule',
     action: (v) => insertBlock(v, '\n---\n'),
@@ -129,20 +138,34 @@ const actions: ToolbarAction[] = [
 ];
 
 export function MarkdownToolbar({ view }: MarkdownToolbarProps) {
+  const [showCheatSheet, setShowCheatSheet] = useState(false);
+
   return (
-    <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
-      {actions.map((action) => (
-        <button
-          key={action.title}
-          onClick={() => {
-            if (view.current) action.action(view.current);
-          }}
-          className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
-          title={action.title}
-        >
-          <action.icon className="w-4 h-4" />
-        </button>
-      ))}
-    </div>
+    <>
+      <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+        {actions.map((action) => (
+          <button
+            key={action.title}
+            onClick={() => {
+              if (view.current) action.action(view.current);
+            }}
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+            title={action.title}
+          >
+            <action.icon className="w-4 h-4" />
+          </button>
+        ))}
+        <div className="ml-auto">
+          <button
+            onClick={() => setShowCheatSheet(true)}
+            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+            title="Markdown cheat sheet"
+          >
+            <HelpCircle className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+      <MarkdownCheatSheet isOpen={showCheatSheet} onClose={() => setShowCheatSheet(false)} />
+    </>
   );
 }

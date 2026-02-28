@@ -7,7 +7,19 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.10.0**
+Current Version: **0.11.0**
+
+---
+
+## [0.11.0] — 2026-02-28
+
+### Added
+- **Table insert** — Markdown toolbar button to insert a 3-column table template
+- **Markdown cheat sheet** — Built-in reference guide accessible via help icon in the toolbar, covering text formatting, headings, lists, blocks, tables, and more
+- **Clickable app title** — Clicking "Beijer.ink" in the sidebar header refreshes the page
+
+### Changed
+- **Settings dialog refactored** — Now a proper settings area with scrollable sections; password change moved to its own `ChangePasswordSection` component, making it easy to add future settings sections
 
 ---
 

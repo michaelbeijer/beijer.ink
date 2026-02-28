@@ -246,10 +246,13 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900">
       {/* Header */}
       <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-200 dark:border-slate-800">
-        <div className="flex items-center gap-2">
+        <button
+          onClick={() => window.location.reload()}
+          className="flex items-center gap-2 hover:opacity-70 transition-opacity"
+        >
           <PenLine className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span className="font-semibold text-sm text-slate-900 dark:text-white">Beijer.ink</span>
-        </div>
+        </button>
         <div className="flex items-center gap-0.5">
           <button
             onClick={handleCreateRootNote}
