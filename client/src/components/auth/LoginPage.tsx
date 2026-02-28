@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { PenLine } from 'lucide-react';
+import { PenLine, Github } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -67,6 +67,17 @@ export function LoginPage() {
             </Link>
           </div>
         </form>
+
+        <div className="mt-6 text-center">
+          <a
+            href="https://github.com/michaelbeijer/beijer.ink"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
+            <Github className="w-4 h-4" /> GitHub
+          </a>
+        </div>
       </div>
     </div>
   );

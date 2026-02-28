@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PenLine, FolderPlus, FilePlus, LogOut, Sun, Moon, Settings } from 'lucide-react';
+import { PenLine, FolderPlus, FilePlus, LogOut, Sun, Moon, Settings, Github } from 'lucide-react';
 import { getNotebooks, createNotebook, deleteNotebook, updateNotebook } from '../../api/notebooks';
 import { getRootNotes, createNote, deleteNote, moveNote } from '../../api/notes';
 import { useAuth } from '../../contexts/AuthContext';
@@ -383,6 +383,14 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         >
           <Settings className="w-4 h-4" /> Settings
         </button>
+        <a
+          href="https://github.com/michaelbeijer/beijer.ink"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
+        >
+          <Github className="w-4 h-4" /> GitHub
+        </a>
         <button
           onClick={logout}
           className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
