@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { X } from 'lucide-react';
 import { ChangePasswordSection } from './ChangePasswordSection';
+import { DownloadBackupSection } from './DownloadBackupSection';
 
 interface SettingsDialogProps {
   isOpen: boolean;
@@ -36,8 +37,26 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         </div>
 
         {/* Scrollable content */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-8">
-          <ChangePasswordSection />
+        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+          {/* Account section */}
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 px-4">
+              Account
+            </h3>
+            <div className="space-y-1">
+              <ChangePasswordSection />
+            </div>
+          </section>
+
+          {/* Data section */}
+          <section>
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 px-4">
+              Data
+            </h3>
+            <div className="space-y-1">
+              <DownloadBackupSection />
+            </div>
+          </section>
         </div>
       </div>
     </div>

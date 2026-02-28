@@ -13,6 +13,7 @@ import notebooksRoutes from './routes/notebooks.routes.js';
 import notesRoutes from './routes/notes.routes.js';
 import searchRoutes from './routes/search.routes.js';
 import scratchpadRoutes from './routes/scratchpad.routes.js';
+import backupRoutes from './routes/backup.routes.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +35,7 @@ export function createApp() {
   app.use('/api/notes', requireAuth, notesRoutes);
   app.use('/api/search', requireAuth, searchRoutes);
   app.use('/api/scratchpad', requireAuth, scratchpadRoutes);
+  app.use('/api/backup', requireAuth, backupRoutes);
 
   // Serve static frontend in production only
   const publicPath = path.join(__dirname, '..', 'public');

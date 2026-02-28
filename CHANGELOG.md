@@ -7,7 +7,18 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.11.0**
+Current Version: **0.12.0**
+
+---
+
+## [0.12.0] — 2026-02-28
+
+### Added
+- **Download backup** — Settings → Data → "Download Backup" exports all notes as individual `.md` files in a zip archive, preserving the notebook folder hierarchy
+- `GET /api/backup/download` endpoint streams a zip archive with `archiver`
+
+### Changed
+- **Collapsible settings sections** — Password change is now a collapsible row with icon, title, and description; click to expand the form
 
 ---
 

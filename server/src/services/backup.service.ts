@@ -1,0 +1,66 @@
+import archiver from 'archiver';
+import { prisma } from '../lib/prisma.js';
+
+function sanitizeFilename(name: string): string {
+  return name.replace(/[/\\:*?"<>|]/g, '_').trim() || 'Untitled';
+}
+
+export async function createBackupArchive() {
+  const [notebooks, notes] = await Promise.all([
+    prisma.notebook.findMany({ select: { id: true, name: true, parentId: true } }),
+    prisma.note.findMany({ select: { title: true, content: true, notebookId: true } }),
+  ]);
+
+  // Build notebook ID → folder path map
+  const notebookMap = new Map(notebooks.map((nb) => [nb.id, nb]));
+  const pathCache = new Map<string, string>();
+
+  function getNotebookPath(id: string): string {
+    if (pathCache.has(id)) return pathCache.get(id)!;
+    const nb = notebookMap.get(id);
+    if (!nb) return '';
+    const parentPath = nb.parentId ? getNotebookPath(nb.parentId) : '';
+    const fullPath = parentPath ? `${parentPath}/${sanitizeFilename(nb.name)}` : sanitizeFilename(nb.name);
+    pathCache.set(id, fullPath);
+    return fullPath;
+  }
+
+  const archive = archiver('zip', { zlib: { level: 9 } });
+
+  // Track used filenames per directory to handle duplicates
+  const usedNames = new Map<string, Set<string>>();
+
+  function uniqueName(dir: string, base: string): string {
+    if (!usedNames.has(dir)) usedNames.set(dir, new Set());
+    const names = usedNames.get(dir)!;
+    let name = base;
+    let counter = 2;
+    while (names.has(name)) {
+      name = `${base} (${counter++})`;
+    }
+    names.add(name);
+    return name;
+  }
+
+  // Add empty folders for notebooks with no notes
+  const notebooksWithNotes = new Set(notes.filter((n) => n.notebookId).map((n) => n.notebookId));
+  for (const nb of notebooks) {
+    if (!notebooksWithNotes.has(nb.id)) {
+      const folderPath = getNotebookPath(nb.id);
+      // archiver creates directories when you append with a trailing slash
+      archive.append('', { name: `${folderPath}/` });
+    }
+  }
+
+  // Add notes as .md files
+  for (const note of notes) {
+    const dir = note.notebookId ? getNotebookPath(note.notebookId) : '';
+    const baseName = sanitizeFilename(note.title);
+    const fileName = uniqueName(dir, baseName);
+    const filePath = dir ? `${dir}/${fileName}.md` : `${fileName}.md`;
+    archive.append(note.content, { name: filePath });
+  }
+
+  archive.finalize();
+  return archive;
+}
