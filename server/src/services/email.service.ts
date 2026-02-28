@@ -1,10 +1,14 @@
+import dns from 'dns';
 import nodemailer from 'nodemailer';
 import { config } from '../config.js';
 
+// Railway containers lack IPv6 — force IPv4 for SMTP connections
+dns.setDefaultResultOrder('ipv4first');
+
 const transporter = nodemailer.createTransport({
   host: 'smtp.gmail.com',
-  port: 587,
-  secure: false,
+  port: 465,
+  secure: true,
   auth: {
     user: config.gmailUser,
     pass: config.gmailAppPassword,

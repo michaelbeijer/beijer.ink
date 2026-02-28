@@ -20,6 +20,9 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 export function createApp() {
   const app = express();
 
+  // Railway sits behind a reverse proxy — trust X-Forwarded-For for rate limiting
+  app.set('trust proxy', 1);
+
   // Middleware
   app.use(helmet({ contentSecurityPolicy: false }));
   app.use(compression());
