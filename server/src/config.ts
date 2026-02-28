@@ -5,8 +5,7 @@ export const config = {
   nodeEnv: process.env.NODE_ENV || 'development',
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-me',
   databaseUrl: process.env.DATABASE_URL || '',
-  gmailUser: process.env.GMAIL_USER || '',
-  gmailAppPassword: process.env.GMAIL_APP_PASSWORD || '',
+  resendApiKey: process.env.RESEND_API_KEY || '',
   adminEmail: process.env.ADMIN_EMAIL || '',
   appUrl: process.env.APP_URL || 'http://localhost:5173',
 

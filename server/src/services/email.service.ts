@@ -1,23 +1,11 @@
-import dns from 'dns';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import { config } from '../config.js';
 
-// Railway containers lack IPv6 — force IPv4 for SMTP connections
-dns.setDefaultResultOrder('ipv4first');
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 465,
-  secure: true,
-  auth: {
-    user: config.gmailUser,
-    pass: config.gmailAppPassword,
-  },
-});
+const resend = new Resend(config.resendApiKey);
 
 export async function sendPasswordResetEmail(resetUrl: string) {
-  await transporter.sendMail({
-    from: `"Beijer.ink" <${config.gmailUser}>`,
+  await resend.emails.send({
+    from: 'Beijer.ink <onboarding@resend.dev>',
     to: config.adminEmail,
     subject: 'Beijer.ink — Password Reset',
     html: `
