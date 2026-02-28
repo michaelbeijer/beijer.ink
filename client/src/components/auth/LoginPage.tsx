@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { PenLine } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 
 export function LoginPage() {
@@ -56,6 +57,15 @@ export function LoginPage() {
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
+
+          <div className="text-center">
+            <Link
+              to="/forgot-password"
+              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
         </form>
       </div>
     </div>

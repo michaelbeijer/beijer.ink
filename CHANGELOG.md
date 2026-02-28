@@ -7,7 +7,22 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.12.0**
+Current Version: **0.13.0**
+
+---
+
+## [0.13.0] — 2026-02-28
+
+### Added
+- **Password reset via email** — "Forgot password?" link on login page sends a reset email via Gmail SMTP
+- **Forgot password page** (`/forgot-password`) — Enter email, receive a reset link; generic success message prevents email enumeration
+- **Reset password page** (`/reset-password/:token`) — Set a new password using a time-limited token (1 hour); auto-redirects to login on success
+- `POST /api/auth/forgot-password` and `POST /api/auth/reset-password` endpoints
+- Rate limiting on reset requests (3 per 15 minutes)
+- `resetToken` and `resetExpires` fields on User model
+
+### Setup required
+- Set `GMAIL_USER`, `GMAIL_APP_PASSWORD`, `ADMIN_EMAIL`, and `APP_URL` environment variables on Railway
 
 ---
 

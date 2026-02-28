@@ -10,6 +10,8 @@ datasource db {
 model User {
   id           String       @id @default("admin")
   passwordHash String       @map("password_hash")
+  resetToken   String?      @map("reset_token")
+  resetExpires DateTime?    @map("reset_expires")
   createdAt    DateTime     @default(now()) @map("created_at")
   scratchpads  Scratchpad[]
 
