@@ -7,7 +7,22 @@ This project uses [Semantic Versioning](https://semver.org/): `MAJOR.MINOR.PATCH
 - **MINOR** — New features, non-breaking enhancements
 - **PATCH** — Bug fixes, small improvements
 
-Current Version: **0.13.1**
+Current Version: **0.14.0**
+
+---
+
+## [0.14.0] - 2026-03-08
+
+### Added
+- Automatic daily Google Drive backups using a service account and configurable cron schedule
+- Manual "Run Google Drive Backup Now" action in Settings to test the Google Drive upload immediately
+- `POST /api/backup/google-drive/run` endpoint for on-demand Google Drive backup uploads
+
+### Changed
+- Backup filenames are now generated from a shared helper so manual downloads and Google Drive uploads stay aligned
+
+### Setup required
+- Set `BACKUP_ENABLED`, `BACKUP_CRON`, `BACKUP_TIMEZONE`, `GOOGLE_DRIVE_FOLDER_ID`, `GOOGLE_DRIVE_CLIENT_EMAIL`, and `GOOGLE_DRIVE_PRIVATE_KEY`
 
 ---
 
@@ -285,3 +300,5 @@ Initial release with core note-taking functionality.
 - Zod request validation on all mutation endpoints
 - Async error handling middleware for Express
 - Helmet security headers and CORS configuration
+
+

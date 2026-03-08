@@ -1,6 +1,6 @@
 {
   "name": "beijer-ink-server",
-  "version": "0.1.0",
+  "version": "0.14.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -20,8 +20,10 @@
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
     "express-rate-limit": "^7.5.0",
+    "googleapis": "^171.4.0",
     "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2",
+    "node-cron": "^4.2.1",
     "resend": "^6.9.3",
     "zod": "^3.24.2"
   },

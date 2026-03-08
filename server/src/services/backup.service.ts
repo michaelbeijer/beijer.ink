@@ -5,13 +5,17 @@ function sanitizeFilename(name: string): string {
   return name.replace(/[/\\:*?"<>|]/g, '_').trim() || 'Untitled';
 }
 
+export function getBackupFilename(date = new Date()): string {
+  return `beijer-ink-backup-${date.toISOString().slice(0, 10)}.zip`;
+}
+
 export async function createBackupArchive() {
   const [notebooks, notes] = await Promise.all([
     prisma.notebook.findMany({ select: { id: true, name: true, parentId: true } }),
     prisma.note.findMany({ select: { title: true, content: true, notebookId: true } }),
   ]);
 
-  // Build notebook ID → folder path map
+  // Build notebook ID -> folder path map.
   const notebookMap = new Map(notebooks.map((nb) => [nb.id, nb]));
   const pathCache = new Map<string, string>();
 
@@ -27,7 +31,7 @@ export async function createBackupArchive() {
 
   const archive = archiver('zip', { zlib: { level: 9 } });
 
-  // Track used filenames per directory to handle duplicates
+  // Track used filenames per directory to handle duplicates.
   const usedNames = new Map<string, Set<string>>();
 
   function uniqueName(dir: string, base: string): string {
@@ -42,17 +46,16 @@ export async function createBackupArchive() {
     return name;
   }
 
-  // Add empty folders for notebooks with no notes
-  const notebooksWithNotes = new Set(notes.filter((n) => n.notebookId).map((n) => n.notebookId));
-  for (const nb of notebooks) {
-    if (!notebooksWithNotes.has(nb.id)) {
-      const folderPath = getNotebookPath(nb.id);
-      // archiver creates directories when you append with a trailing slash
+  // Add empty folders for notebooks with no notes.
+  const notebooksWithNotes = new Set(notes.filter((note) => note.notebookId).map((note) => note.notebookId));
+  for (const notebook of notebooks) {
+    if (!notebooksWithNotes.has(notebook.id)) {
+      const folderPath = getNotebookPath(notebook.id);
       archive.append('', { name: `${folderPath}/` });
     }
   }
 
-  // Add notes as .md files
+  // Add notes as .md files.
   for (const note of notes) {
     const dir = note.notebookId ? getNotebookPath(note.notebookId) : '';
     const baseName = sanitizeFilename(note.title);

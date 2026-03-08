@@ -133,6 +133,8 @@ All endpoints under `/api`, JWT-protected except login.
 | `GET` | `/api/scratchpad` | Get scratchpad content |
 | `PUT` | `/api/scratchpad` | Update scratchpad content |
 | `GET` | `/api/search?q=...` | Full-text search with highlighted snippets |
+| `GET` | `/api/backup/download` | Download all notes as a zip of markdown files |
+| `POST` | `/api/backup/google-drive/run` | Run a Google Drive backup immediately |
 
 ## Deployment (Railway)
 
@@ -142,6 +144,27 @@ All endpoints under `/api`, JWT-protected except login.
 4. Railway will build using the Dockerfile and run migrations on startup
 5. Configure your custom domain in Railway settings
 
+## Daily Google Drive Backups
+
+You can enable automatic daily backups to a specific Google Drive folder using a Google service account. The uploaded ZIP uses the same markdown export as the in-app `Download Backup` feature, preserving your notebook folder structure. You can also test the upload from Settings with `Run Google Drive Backup Now`.
+
+1. Create a Google Cloud service account and enable the Google Drive API.
+2. Create or choose a Google Drive folder for backups.
+3. Share that folder with the service account email address.
+4. Set these environment variables:
+   - `BACKUP_ENABLED=true`
+   - `BACKUP_CRON=0 2 * * *`
+   - `BACKUP_TIMEZONE=Europe/London`
+   - `GOOGLE_DRIVE_FOLDER_ID=...`
+   - `GOOGLE_DRIVE_CLIENT_EMAIL=...`
+   - `GOOGLE_DRIVE_PRIVATE_KEY=...`
+
+Use `GOOGLE_DRIVE_PRIVATE_KEY` as a single environment variable value with literal `\n` sequences if your deployment UI does not support multi-line secrets directly.
+
 ## License
 
 This project is for personal use. All rights reserved.
+
+
+
+
