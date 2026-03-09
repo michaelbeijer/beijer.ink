@@ -24,13 +24,13 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg mx-4 max-h-[85vh] flex flex-col">
+      <div className="relative bg-surface rounded-xl shadow-2xl border border-edge w-full max-w-lg mx-4 max-h-[85vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-800 shrink-0">
-          <h2 className="text-lg font-semibold text-slate-900 dark:text-white">Settings</h2>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-edge shrink-0">
+          <h2 className="text-lg font-semibold text-ink">Settings</h2>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded transition-colors"
+            className="p-1 text-ink-faint hover:text-ink rounded transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -40,7 +40,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
           {/* Account section */}
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 px-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted mb-2 px-4">
               Account
             </h3>
             <div className="space-y-1">
@@ -50,7 +50,7 @@ export function SettingsDialog({ isOpen, onClose }: SettingsDialogProps) {
 
           {/* Data section */}
           <section>
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2 px-4">
+            <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-muted mb-2 px-4">
               Data
             </h3>
             <div className="space-y-1">

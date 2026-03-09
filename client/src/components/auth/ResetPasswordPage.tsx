@@ -48,19 +48,19 @@ export function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent mb-4">
             <PenLine className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">New Password</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Enter your new password</p>
+          <h1 className="text-2xl font-bold text-ink">New Password</h1>
+          <p className="text-ink-muted mt-1">Enter your new password</p>
         </div>
 
         {success ? (
           <div className="text-center space-y-4">
-            <p className="text-green-600 dark:text-green-400 text-sm">
+            <p className="text-success text-sm">
               Password reset successfully! Redirecting to login...
             </p>
           </div>
@@ -72,7 +72,7 @@ export function ResetPasswordPage() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 placeholder="New password (min 8 characters)"
-                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-input-bg border border-edge rounded-lg text-ink placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                 autoFocus
               />
             </div>
@@ -82,18 +82,18 @@ export function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm new password"
-                className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-3 bg-input-bg border border-edge rounded-lg text-ink placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
               />
             </div>
 
             {error && (
-              <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>
+              <p className="text-danger text-sm">{error}</p>
             )}
 
             <button
               type="submit"
               disabled={loading || !newPassword || !confirmPassword}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+              className="w-full py-3 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
             >
               {loading ? 'Resetting...' : 'Reset Password'}
             </button>
@@ -101,7 +101,7 @@ export function ResetPasswordPage() {
             <div className="text-center">
               <Link
                 to="/login"
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+                className="text-sm text-accent hover:underline"
               >
                 Back to login
               </Link>

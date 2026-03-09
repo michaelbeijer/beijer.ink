@@ -6,7 +6,8 @@ import { languages } from '@codemirror/language-data';
 import { GFM } from '@lezer/markdown';
 import { defaultKeymap, indentWithTab, history, historyKeymap } from '@codemirror/commands';
 import { closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
-import { lightTheme, darkTheme } from '../editor/theme';
+import { getEditorTheme } from '../editor/theme';
+import type { Theme } from '../contexts/ThemeContext';
 import {
   searchHighlightField,
   setSearchEffect,
@@ -18,17 +19,17 @@ import {
 interface UseCodeMirrorOptions {
   onChange: (value: string) => void;
   placeholder?: string;
-  dark?: boolean;
+  theme?: Theme;
 }
 
-export function useCodeMirror({ onChange, placeholder, dark }: UseCodeMirrorOptions) {
+export function useCodeMirror({ onChange, placeholder, theme = 'dark' }: UseCodeMirrorOptions) {
   const viewRef = useRef<EditorView | null>(null);
   const onChangeRef = useRef(onChange);
   onChangeRef.current = onChange;
   const suppressRef = useRef(false);
   const themeCompartment = useRef(new Compartment());
-  const darkRef = useRef(dark);
-  darkRef.current = dark;
+  const themeRef = useRef(theme);
+  themeRef.current = theme;
   const placeholderRef = useRef(placeholder);
   placeholderRef.current = placeholder;
 
@@ -58,7 +59,7 @@ export function useCodeMirror({ onChange, placeholder, dark }: UseCodeMirrorOpti
         indentWithTab,
       ]),
       markdown({ codeLanguages: languages, extensions: GFM }),
-      themeCompartment.current.of(darkRef.current ? darkTheme : lightTheme),
+      themeCompartment.current.of(getEditorTheme(themeRef.current)),
       EditorView.lineWrapping,
       searchHighlightField,
       updateListener,
@@ -77,14 +78,14 @@ export function useCodeMirror({ onChange, placeholder, dark }: UseCodeMirrorOpti
     });
   }, []);
 
-  // Switch theme when dark mode changes
+  // Switch theme when it changes
   useEffect(() => {
     const view = viewRef.current;
     if (!view) return;
     view.dispatch({
-      effects: themeCompartment.current.reconfigure(dark ? darkTheme : lightTheme),
+      effects: themeCompartment.current.reconfigure(getEditorTheme(theme)),
     });
-  }, [dark]);
+  }, [theme]);
 
   // Replace entire document (for loading a new note)
   const setDoc = useCallback((value: string) => {

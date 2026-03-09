@@ -142,14 +142,14 @@ export function MarkdownToolbar({ view }: MarkdownToolbarProps) {
 
   return (
     <>
-      <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
+      <div className="flex items-center gap-0.5 px-3 py-1.5 border-b border-edge bg-panel">
         {actions.map((action) => (
           <button
             key={action.title}
             onClick={() => {
               if (view.current) action.action(view.current);
             }}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+            className="p-1.5 text-ink-faint hover:text-ink-secondary hover:bg-hover rounded transition-colors"
             title={action.title}
           >
             <action.icon className="w-4 h-4" />
@@ -158,7 +158,7 @@ export function MarkdownToolbar({ view }: MarkdownToolbarProps) {
         <div className="ml-auto">
           <button
             onClick={() => setShowCheatSheet(true)}
-            className="p-1.5 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 rounded transition-colors"
+            className="p-1.5 text-ink-faint hover:text-ink-secondary hover:bg-hover rounded transition-colors"
             title="Markdown cheat sheet"
           >
             <HelpCircle className="w-4 h-4" />

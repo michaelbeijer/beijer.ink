@@ -76,27 +76,27 @@ export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSear
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center pt-[15vh]">
       {/* Backdrop */}
-      <div className="absolute inset-0 bg-black/40 dark:bg-black/60" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
 
       {/* Dialog */}
-      <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl shadow-2xl">
+      <div className="relative w-full max-w-xl bg-surface border border-edge rounded-xl shadow-2xl">
         {/* Search input */}
-        <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-200 dark:border-slate-700">
-          <Search className="w-5 h-5 text-slate-400" />
+        <div className="flex items-center gap-3 px-4 py-3 border-b border-edge">
+          <Search className="w-5 h-5 text-ink-faint" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search all notes..."
-            className="flex-1 bg-transparent text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none"
+            className="flex-1 bg-transparent text-ink placeholder:text-placeholder focus:outline-none"
           />
           {query && (
-            <button onClick={() => setQuery('')} className="text-slate-400 hover:text-slate-900 dark:hover:text-white">
+            <button onClick={() => setQuery('')} className="text-ink-faint hover:text-ink">
               <X className="w-4 h-4" />
             </button>
           )}
-          <kbd className="hidden sm:inline-block text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700">
+          <kbd className="hidden sm:inline-block text-xs text-ink-muted bg-muted-bg px-1.5 py-0.5 rounded border border-edge">
             ESC
           </kbd>
         </div>
@@ -104,7 +104,7 @@ export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSear
         {/* Results */}
         <div className="max-h-[50vh] overflow-y-auto">
           {loading && (
-            <div className="px-4 py-8 text-center text-slate-500">Searching...</div>
+            <div className="px-4 py-8 text-center text-ink-muted">Searching...</div>
           )}
 
           {!loading && results.length > 0 && (
@@ -116,15 +116,15 @@ export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSear
                     onSelectNote(result.id, query);
                     onClose();
                   }}
-                  className="w-full text-left px-4 py-3 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors border-b border-slate-100 dark:border-slate-800/50"
+                  className="w-full text-left px-4 py-3 hover:bg-hover transition-colors border-b border-edge-soft"
                 >
                   <div className="flex items-start gap-2">
-                    <FileText className="w-4 h-4 text-slate-400 dark:text-slate-500 mt-0.5 shrink-0" />
+                    <FileText className="w-4 h-4 text-ink-faint mt-0.5 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-medium text-slate-900 dark:text-white truncate">{result.title}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">{result.notebookName || 'Root'}</p>
+                      <h4 className="text-sm font-medium text-ink truncate">{result.title}</h4>
+                      <p className="text-xs text-ink-muted mt-0.5">{result.notebookName || 'Root'}</p>
                       <p
-                        className="text-xs text-slate-500 dark:text-slate-400 mt-1 line-clamp-2 [&_mark]:bg-yellow-200 dark:[&_mark]:bg-yellow-500/30 [&_mark]:text-yellow-800 dark:[&_mark]:text-yellow-200 [&_mark]:rounded-sm [&_mark]:px-0.5"
+                        className="text-xs text-ink-muted mt-1 line-clamp-2 [&_mark]:bg-mark-bg [&_mark]:text-mark-text [&_mark]:rounded-sm [&_mark]:px-0.5"
                         dangerouslySetInnerHTML={{ __html: result.headline }}
                       />
                     </div>
@@ -132,7 +132,7 @@ export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSear
                 </button>
               ))}
               {total > results.length && (
-                <div className="px-4 py-2 text-xs text-slate-500 text-center">
+                <div className="px-4 py-2 text-xs text-ink-muted text-center">
                   Showing {results.length} of {total} results
                 </div>
               )}
@@ -140,13 +140,13 @@ export function GlobalSearchDialog({ isOpen, onClose, onSelectNote }: GlobalSear
           )}
 
           {!loading && query.trim() && results.length === 0 && (
-            <div className="px-4 py-8 text-center text-slate-500">
+            <div className="px-4 py-8 text-center text-ink-muted">
               No results found for "{query}"
             </div>
           )}
 
           {!loading && !query.trim() && (
-            <div className="px-4 py-8 text-center text-slate-500 text-sm">
+            <div className="px-4 py-8 text-center text-ink-muted text-sm">
               Type to search across all your notes
             </div>
           )}

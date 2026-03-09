@@ -10,7 +10,7 @@ export function ResizeDivider({ onMouseDown }: ResizeDividerProps) {
     >
       {/* Hover target — wider than visible line for easier grabbing */}
       <div className="absolute inset-y-0 -left-1.5 w-3 flex items-stretch justify-center">
-        <div className="w-px bg-slate-200 dark:bg-slate-800 group-hover:bg-blue-500 transition-colors" />
+        <div className="w-px bg-edge group-hover:bg-accent transition-colors" />
       </div>
     </div>
   );

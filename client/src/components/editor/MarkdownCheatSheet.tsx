@@ -74,12 +74,12 @@ export function MarkdownCheatSheet({ isOpen, onClose }: MarkdownCheatSheetProps)
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-900 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 w-full max-w-lg mx-4 max-h-[85vh] flex flex-col">
-        <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800 shrink-0">
-          <h2 className="text-base font-semibold text-slate-900 dark:text-white">Markdown Cheat Sheet</h2>
+      <div className="relative bg-panel rounded-xl shadow-2xl border border-edge w-full max-w-lg mx-4 max-h-[85vh] flex flex-col">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-edge shrink-0">
+          <h2 className="text-base font-semibold text-ink">Markdown Cheat Sheet</h2>
           <button
             onClick={onClose}
-            className="p-1 text-slate-400 hover:text-slate-700 dark:hover:text-white rounded transition-colors"
+            className="p-1 text-ink-faint hover:text-ink rounded transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -88,16 +88,16 @@ export function MarkdownCheatSheet({ isOpen, onClose }: MarkdownCheatSheetProps)
         <div className="flex-1 overflow-y-auto p-5 space-y-5">
           {sections.map((section) => (
             <div key={section.title}>
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">
+              <h3 className="text-xs font-semibold uppercase tracking-wider text-ink-faint mb-2">
                 {section.title}
               </h3>
               <div className="space-y-1">
                 {section.rows.map(([syntax, desc]) => (
                   <div key={syntax} className="flex items-baseline gap-3">
-                    <code className="shrink-0 text-xs bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-1.5 py-0.5 rounded font-mono whitespace-pre">
+                    <code className="shrink-0 text-xs bg-muted-bg text-ink-secondary px-1.5 py-0.5 rounded font-mono whitespace-pre">
                       {syntax}
                     </code>
-                    <span className="text-xs text-slate-500 dark:text-slate-400">{desc}</span>
+                    <span className="text-xs text-ink-muted">{desc}</span>
                   </div>
                 ))}
               </div>

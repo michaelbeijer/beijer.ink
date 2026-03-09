@@ -29,7 +29,7 @@ export function Scratchpad() {
   const { containerRef, setDoc, focus } = useCodeMirror({
     onChange: handleChange,
     placeholder: 'Jot something down...',
-    dark: theme === 'dark',
+    theme,
   });
 
   const { data } = useQuery({
@@ -59,18 +59,18 @@ export function Scratchpad() {
   }, []);
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-950">
+    <div className="h-full flex flex-col bg-surface">
       {/* Header */}
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-        <Pencil className="w-4 h-4 text-slate-400" />
-        <h2 className="text-sm font-medium text-slate-600 dark:text-slate-300">Scratchpad</h2>
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-edge">
+        <Pencil className="w-4 h-4 text-ink-faint" />
+        <h2 className="text-sm font-medium text-ink-secondary">Scratchpad</h2>
       </div>
 
       {/* CodeMirror editor */}
       <div ref={containerRef} className="flex-1 min-h-0 overflow-hidden" />
 
       {/* Footer */}
-      <div className="px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">
+      <div className="px-4 py-1 border-t border-edge text-xs text-ink-dim">
         {charCount} characters
       </div>
     </div>

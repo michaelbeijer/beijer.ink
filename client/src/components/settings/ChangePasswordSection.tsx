@@ -40,20 +40,20 @@ export function ChangePasswordSection() {
     }
   }, [currentPassword, newPassword, confirmPassword]);
 
-  const inputClass = 'w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent';
+  const inputClass = 'w-full px-3 py-2 bg-input-bg border border-edge rounded-lg text-sm text-ink placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent';
 
   return (
     <div>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
+        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-hover transition-colors text-left"
       >
-        <Lock className="w-5 h-5 text-slate-400" />
+        <Lock className="w-5 h-5 text-ink-faint" />
         <div className="flex-1">
-          <div className="text-sm font-medium text-slate-900 dark:text-white">Change Password</div>
-          <div className="text-xs text-slate-500 dark:text-slate-400">Update your account password</div>
+          <div className="text-sm font-medium text-ink">Change Password</div>
+          <div className="text-xs text-ink-muted">Update your account password</div>
         </div>
-        <ChevronRight className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-90' : ''}`} />
+        <ChevronRight className={`w-4 h-4 text-ink-faint transition-transform ${isOpen ? 'rotate-90' : ''}`} />
       </button>
 
       {isOpen && (
@@ -81,16 +81,16 @@ export function ChangePasswordSection() {
           />
 
           {error && (
-            <p className="text-sm text-red-500 dark:text-red-400">{error}</p>
+            <p className="text-sm text-danger">{error}</p>
           )}
           {success && (
-            <p className="text-sm text-green-600 dark:text-green-400">{success}</p>
+            <p className="text-sm text-success">{success}</p>
           )}
 
           <button
             type="submit"
             disabled={loading || !currentPassword || !newPassword || !confirmPassword}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
+            className="px-4 py-2 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium rounded-lg transition-colors"
           >
             {loading ? 'Changing...' : 'Change Password'}
           </button>

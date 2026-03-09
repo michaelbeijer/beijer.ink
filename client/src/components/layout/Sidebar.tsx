@@ -1,10 +1,10 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { PenLine, FolderPlus, FilePlus, LogOut, Sun, Moon, Settings, Github } from 'lucide-react';
+import { PenLine, FolderPlus, FilePlus, LogOut, Settings, Github } from 'lucide-react';
 import { getNotebooks, createNotebook, deleteNotebook, updateNotebook } from '../../api/notebooks';
 import { getRootNotes, createNote, deleteNote, moveNote } from '../../api/notes';
 import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
+import { ThemePicker } from './ThemePicker';
 import { flattenNotebookTree } from '../../utils/flattenNotebookTree';
 import { useNotebookNotes } from '../../hooks/useNotebookNotes';
 import { useTreeKeyboardNav } from '../../hooks/useTreeKeyboardNav';
@@ -27,7 +27,6 @@ interface SidebarProps {
 export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, onSelectNote, onSelectRootNote, autoExpandNotebookId, onOpenSettings, onClose }: SidebarProps) {
   const queryClient = useQueryClient();
   const { logout } = useAuth();
-  const { theme, toggleTheme } = useTheme();
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
@@ -258,27 +257,27 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
   }
 
   return (
-    <div className="h-full flex flex-col bg-slate-50 dark:bg-slate-900">
+    <div className="h-full flex flex-col bg-panel">
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2.5 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center justify-between px-3 py-2.5 border-b border-edge">
         <button
           onClick={() => window.location.reload()}
           className="flex items-center gap-2 hover:opacity-70 transition-opacity"
         >
-          <PenLine className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-          <span className="font-semibold text-sm text-slate-900 dark:text-white">Beijer.ink</span>
+          <PenLine className="w-4 h-4 text-accent" />
+          <span className="font-semibold text-sm text-ink">Beijer.ink</span>
         </button>
         <div className="flex items-center gap-0.5">
           <button
             onClick={handleCreateRootNote}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+            className="p-1 text-ink-faint hover:text-ink hover:bg-hover rounded transition-colors"
             title="New note"
           >
             <FilePlus className="w-4 h-4" />
           </button>
           <button
             onClick={handleCreate}
-            className="p-1 text-slate-400 dark:text-slate-500 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-800 rounded transition-colors"
+            className="p-1 text-ink-faint hover:text-ink hover:bg-hover rounded transition-colors"
             title="New notebook"
           >
             <FolderPlus className="w-4 h-4" />
@@ -349,10 +348,10 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         })}
 
         {notebooks.length === 0 && rootNotes.length === 0 && (
-          <p className="text-sm text-slate-500 text-center py-8">
+          <p className="text-sm text-ink-muted text-center py-8">
             No notebooks yet.
             <br />
-            <button onClick={handleCreate} className="text-blue-600 dark:text-blue-400 hover:underline mt-1 inline-block">
+            <button onClick={handleCreate} className="text-accent hover:underline mt-1 inline-block">
               Create one
             </button>
           </p>
@@ -363,7 +362,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
           <>
             {notebooks.length > 0 && (
               <div className="mt-2 mb-1 px-2">
-                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400 dark:text-slate-600">
+                <span className="text-[10px] font-medium uppercase tracking-wider text-ink-dim">
                   Notes
                 </span>
               </div>
@@ -386,17 +385,11 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
       </div>
 
       {/* Footer */}
-      <div className="border-t border-slate-200 dark:border-slate-800 p-1.5">
-        <button
-          onClick={toggleTheme}
-          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
-        >
-          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-          {theme === 'dark' ? 'Light mode' : 'Dark mode'}
-        </button>
+      <div className="border-t border-edge p-1.5">
+        <ThemePicker />
         <button
           onClick={onOpenSettings}
-          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
+          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-ink-muted hover:text-ink hover:bg-hover rounded-md transition-colors"
         >
           <Settings className="w-4 h-4" /> Settings
         </button>
@@ -404,13 +397,13 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
           href="https://github.com/michaelbeijer/beijer.ink"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
+          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-ink-muted hover:text-ink hover:bg-hover rounded-md transition-colors"
         >
           <Github className="w-4 h-4" /> GitHub
         </a>
         <button
           onClick={logout}
-          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-200/70 dark:hover:bg-slate-800 rounded-md transition-colors"
+          className="flex items-center gap-2 w-full px-2.5 py-1.5 text-sm text-ink-muted hover:text-ink hover:bg-hover rounded-md transition-colors"
         >
           <LogOut className="w-4 h-4" /> Sign out
         </button>

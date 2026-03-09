@@ -68,7 +68,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
   const { containerRef, view, setDoc, focus, setSearch, clearSearch, getSearchState, goToMatch, nextMatch, prevMatch } = useCodeMirror({
     onChange: handleChange,
     placeholder: 'Start writing...',
-    dark: theme === 'dark',
+    theme,
   });
 
   const { data: note } = useQuery({
@@ -191,14 +191,14 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
   const modeButtonClass = (mode: EditorMode) =>
     `p-1.5 rounded transition-colors ${
       editorMode === mode
-        ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
-        : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+        ? 'text-accent bg-accent/10'
+        : 'text-ink-faint hover:text-ink hover:bg-hover'
     }`;
 
   return (
-    <div className="h-full flex flex-col bg-white dark:bg-slate-950">
+    <div className="h-full flex flex-col bg-surface">
       {/* Action bar */}
-      <div className="flex items-center gap-1 px-4 py-2 border-b border-slate-200 dark:border-slate-800">
+      <div className="flex items-center gap-1 px-4 py-2 border-b border-edge">
         {/* Mode toggle — left side */}
         <div className="flex items-center gap-0.5 mr-auto">
           <button onClick={() => changeMode('edit')} className={modeButtonClass('edit')} title="Edit">
@@ -218,8 +218,8 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
             onClick={toggleToolbar}
             className={`p-1.5 rounded transition-colors ${
               showToolbar
-                ? 'text-blue-500 bg-blue-50 dark:bg-blue-900/30'
-                : 'text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800'
+                ? 'text-accent bg-accent/10'
+                : 'text-ink-faint hover:text-ink hover:bg-hover'
             }`}
             title={showToolbar ? 'Hide formatting toolbar' : 'Show formatting toolbar'}
           >
@@ -229,7 +229,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
         {onToggleFullscreen && (
           <button
             onClick={onToggleFullscreen}
-            className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+            className="p-1.5 text-ink-faint hover:text-ink hover:bg-hover rounded transition-colors"
             title={isFullscreen ? 'Exit fullscreen (Esc)' : 'Fullscreen'}
           >
             {isFullscreen ? (
@@ -245,7 +245,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
               pinMutation.mutate({ id: noteId, isPinned: !note.isPinned });
             }
           }}
-          className="p-1.5 text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+          className="p-1.5 text-ink-faint hover:text-ink hover:bg-hover rounded transition-colors"
           title={note?.isPinned ? 'Unpin' : 'Pin'}
         >
           {note?.isPinned ? (
@@ -260,7 +260,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
               deleteMutation.mutate(noteId);
             }
           }}
-          className="p-1.5 text-slate-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded transition-colors"
+          className="p-1.5 text-ink-faint hover:text-danger hover:bg-hover rounded transition-colors"
           title="Delete note"
         >
           <Trash2 className="w-4 h-4" />
@@ -295,7 +295,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
         />
 
         {editorMode === 'split' && (
-          <div className="w-px bg-slate-200 dark:bg-slate-800 shrink-0" />
+          <div className="w-px bg-edge shrink-0" />
         )}
 
         {showPreview && (
@@ -306,7 +306,7 @@ export function NoteEditor({ noteId, onNoteDeleted, isFullscreen, onToggleFullsc
       </div>
 
       {/* Status bar */}
-      <div className="px-4 py-1 border-t border-slate-200 dark:border-slate-800 text-xs text-slate-400 dark:text-slate-600">
+      <div className="px-4 py-1 border-t border-edge text-xs text-ink-dim">
         {charCount} characters
       </div>
     </div>

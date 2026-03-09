@@ -24,14 +24,14 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-blue-600 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-accent mb-4">
             <PenLine className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Beijer.ink</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Personal notes</p>
+          <h1 className="text-2xl font-bold text-ink">Beijer.ink</h1>
+          <p className="text-ink-muted mt-1">Personal notes</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -41,19 +41,19 @@ export function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Password"
-              className="w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full px-4 py-3 bg-input-bg border border-edge rounded-lg text-ink placeholder:text-placeholder focus:outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
               autoFocus
             />
           </div>
 
           {error && (
-            <p className="text-red-500 dark:text-red-400 text-sm">{error}</p>
+            <p className="text-danger text-sm">{error}</p>
           )}
 
           <button
             type="submit"
             disabled={loading || !password}
-            className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
+            className="w-full py-3 bg-accent hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-colors"
           >
             {loading ? 'Signing in...' : 'Sign in'}
           </button>
@@ -61,7 +61,7 @@ export function LoginPage() {
           <div className="text-center">
             <Link
               to="/forgot-password"
-              className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              className="text-sm text-accent hover:underline"
             >
               Forgot password?
             </Link>
@@ -73,7 +73,7 @@ export function LoginPage() {
             href="https://github.com/michaelbeijer/beijer.ink"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-sm text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+            className="inline-flex items-center gap-1.5 text-sm text-ink-faint hover:text-ink-secondary transition-colors"
           >
             <Github className="w-4 h-4" /> GitHub
           </a>
