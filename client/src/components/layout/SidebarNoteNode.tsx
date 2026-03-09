@@ -70,7 +70,7 @@ export function SidebarNoteNode({
       {Array.from({ length: node.depth }, (_, i) => (
         <span
           key={i}
-          className="absolute top-0 bottom-0 border-l border-dashed border-slate-300/40 dark:border-slate-600/40"
+          className="absolute top-0 bottom-0 border-l border-dashed border-blue-400/50 dark:border-blue-500/40"
           style={{ left: `${i * 16 + 16}px` }}
         />
       ))}
