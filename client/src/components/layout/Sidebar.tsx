@@ -144,6 +144,21 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     [notebooks, expandedIds, notesMap]
   );
 
+  // For each node, compute which depth-level guides should stop at the vertical center
+  // (because no subsequent node continues that guide line)
+  const guideStopsMap = useMemo(() => {
+    return flatNodes.map((node, i) => {
+      const stops = new Set<number>();
+      const nextNode = flatNodes[i + 1];
+      for (let d = 0; d < node.depth; d++) {
+        if (!nextNode || nextNode.depth <= d) {
+          stops.add(d);
+        }
+      }
+      return stops;
+    });
+  }, [flatNodes]);
+
   // Determine which ID is currently "selected" in the tree for keyboard nav
   const selectedTreeId = useMemo(() => {
     if (selectedNoteId) {
@@ -282,7 +297,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        {flatNodes.map((node) => {
+        {flatNodes.map((node, i) => {
           if (node.type === 'note') {
             return (
               <SidebarNoteNode
@@ -292,6 +307,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
                 isFocused={node.id === focusedId}
                 contextMenuId={contextMenuId}
                 notebooks={notebooks}
+                guideStops={guideStopsMap[i]}
                 onSelect={(nbId, noteId) => {
                   onSelectNote(noteId);
                   setFocusedId(node.id);
@@ -315,6 +331,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
               editName={editName}
               contextMenuId={contextMenuId}
               notebooks={notebooks}
+              guideStops={guideStopsMap[i]}
               onSelect={(id: string) => { onSelectNotebook(id); toggleExpand(id); setFocusedId(id); }}
               onToggleExpand={toggleExpand}
               onStartRename={handleStartRename}

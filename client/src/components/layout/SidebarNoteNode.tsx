@@ -18,6 +18,7 @@ interface SidebarNoteNodeProps {
   isFocused: boolean;
   contextMenuId: string | null;
   notebooks: Notebook[];
+  guideStops: Set<number>;
   onSelect: (notebookId: string, noteId: string) => void;
   onDelete: (noteId: string) => void;
   onContextMenu: (id: string | null) => void;
@@ -31,6 +32,7 @@ export function SidebarNoteNode({
   isFocused,
   contextMenuId,
   notebooks,
+  guideStops,
   onSelect,
   onDelete,
   onContextMenu,
@@ -71,7 +73,7 @@ export function SidebarNoteNode({
       {Array.from({ length: node.depth }, (_, i) => (
         <span
           key={i}
-          className="absolute top-0 bottom-0 border-l border-dashed border-blue-400/50 dark:border-blue-500/40"
+          className={`absolute top-0 border-l border-dashed border-blue-400/50 dark:border-blue-500/40 ${guideStops.has(i) ? 'bottom-1/2' : 'bottom-0'}`}
           style={{ left: `${i * 16 + 16}px` }}
         />
       ))}
