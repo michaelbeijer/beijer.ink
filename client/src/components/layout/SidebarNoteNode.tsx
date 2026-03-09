@@ -55,7 +55,7 @@ export function SidebarNoteNode({
       aria-level={node.depth + 1}
       aria-selected={isSelected}
       onContextMenu={handleContextMenu}
-      className={`group flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer transition-colors focus:outline-none ${
+      className={`relative group flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer transition-colors focus:outline-none ${
         isSelected
           ? 'bg-slate-200/70 dark:bg-slate-800/70 text-slate-900 dark:text-white'
           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/40'
@@ -66,6 +66,15 @@ export function SidebarNoteNode({
         onClose?.();
       }}
     >
+      {/* Indent guides */}
+      {Array.from({ length: node.depth }, (_, i) => (
+        <span
+          key={i}
+          className="absolute top-0 bottom-0 border-l border-dashed border-slate-300/40 dark:border-slate-600/40"
+          style={{ left: `${i * 16 + 16}px` }}
+        />
+      ))}
+
       <span className="w-4.5" />
       <FileText className="w-4 h-4 shrink-0 text-slate-400 dark:text-slate-500" />
       <span className="flex-1 text-sm truncate">{node.note.title}</span>

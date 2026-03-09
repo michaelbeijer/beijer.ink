@@ -93,7 +93,7 @@ export function SidebarNotebookNode({
       aria-expanded={node.hasChildren ? node.isExpanded : undefined}
       aria-selected={isSelected}
       onContextMenu={handleContextMenu}
-      className={`group flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer transition-colors focus:outline-none ${
+      className={`relative group flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer transition-colors focus:outline-none ${
         showDropHighlight
           ? 'ring-2 ring-blue-500 ring-inset bg-blue-600/10'
           : isSelected
@@ -105,13 +105,14 @@ export function SidebarNotebookNode({
         onSelect(nb.id);
       }}
     >
-      {/* Indent guide */}
-      {node.depth > 0 && (
+      {/* Indent guides */}
+      {Array.from({ length: node.depth }, (_, i) => (
         <span
-          className="absolute left-0 top-0 bottom-0 border-l border-slate-200 dark:border-slate-700/50"
-          style={{ marginLeft: `${(node.depth - 1) * 16 + 16}px` }}
+          key={i}
+          className="absolute top-0 bottom-0 border-l border-dashed border-slate-300/40 dark:border-slate-600/40"
+          style={{ left: `${i * 16 + 16}px` }}
         />
-      )}
+      ))}
 
       {node.hasChildren ? (
         <button
