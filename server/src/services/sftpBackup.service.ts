@@ -42,7 +42,7 @@ export async function uploadBackupToSftp(runDate = new Date()) {
   const sftp = new SftpClient();
 
   try {
-    await sftp.connect({
+    const connectionOptions: any = {
       host: config.backupSftpHost,
       port: config.backupSftpPort,
       username: config.backupSftpUsername,
@@ -64,7 +64,9 @@ export async function uploadBackupToSftp(runDate = new Date()) {
         finish(prompts.map(() => config.backupSftpPassword));
       },
       readyTimeout: 20000,
-    });
+    };
+
+    await sftp.connect(connectionOptions);
 
     await sftp.mkdir(config.backupSftpRemoteDir, true);
     await sftp.put(buffer, remotePath);
@@ -77,4 +79,7 @@ export async function uploadBackupToSftp(runDate = new Date()) {
     await sftp.end().catch(() => undefined);
   }
 }
+
+
+
 
