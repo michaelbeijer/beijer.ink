@@ -6,6 +6,11 @@ export async function getNotesByNotebook(notebookId: string): Promise<NoteSummar
   return data;
 }
 
+export async function getFavoriteNotes(): Promise<(NoteSummary & { notebookId: string | null })[]> {
+  const { data } = await api.get<(NoteSummary & { notebookId: string | null })[]>('/notes/favorites');
+  return data;
+}
+
 export async function getRootNotes(): Promise<NoteSummary[]> {
   const { data } = await api.get<NoteSummary[]>('/notes/root');
   return data;
@@ -26,7 +31,7 @@ export async function createNote(body: {
 
 export async function updateNote(
   id: string,
-  body: Partial<Pick<Note, 'content' | 'notebookId' | 'isPinned'>>
+  body: Partial<Pick<Note, 'content' | 'notebookId' | 'isPinned' | 'isFavorite'>>
 ): Promise<Note> {
   const { data } = await api.patch<Note>(`/notes/${id}`, body);
   return data;

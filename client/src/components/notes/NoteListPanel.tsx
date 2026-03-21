@@ -110,6 +110,7 @@ export function NoteListPanel({ notebookId, selectedNoteId, onSelectNote }: Note
         title: 'Untitled',
         content: '',
         isPinned: false,
+        isFavorite: false,
         sortOrder: 0,
         updatedAt: new Date().toISOString(),
         createdAt: new Date().toISOString(),

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDraggable } from '@dnd-kit/core';
 import {
   FileText,
   MoreHorizontal,
@@ -7,6 +8,8 @@ import {
   ChevronRight,
   ChevronDown,
   Folder,
+  Star,
+  StarOff,
 } from 'lucide-react';
 import type { NoteSummary } from '../../types/note';
 import type { Notebook } from '../../types/notebook';
@@ -21,6 +24,7 @@ interface SidebarRootNoteProps {
   onDelete: (id: string) => void;
   onContextMenu: (id: string | null) => void;
   onMoveToNotebook: (noteId: string, notebookId: string) => void;
+  onToggleFavorite: (id: string, currentState: boolean) => void;
 }
 
 export function SidebarRootNote({
@@ -32,9 +36,15 @@ export function SidebarRootNote({
   onDelete,
   onContextMenu,
   onMoveToNotebook,
+  onToggleFavorite,
 }: SidebarRootNoteProps) {
   const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
   const isMenuOpen = contextMenuId === note.id;
+
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `note-${note.id}`,
+    data: { type: 'note', item: note, sourceNotebookId: null },
+  });
 
   function handleContextMenu(e: React.MouseEvent) {
     e.preventDefault();
@@ -44,11 +54,14 @@ export function SidebarRootNote({
 
   return (
     <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       className={`group flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer transition-colors ${
         isSelected
           ? 'bg-active text-ink'
           : 'text-ink-secondary hover:bg-hover'
-      }`}
+      } ${isDragging ? 'opacity-50' : ''}`}
       style={{ paddingLeft: '8px' }}
       onClick={() => onSelect(note.id)}
       onContextMenu={handleContextMenu}
@@ -70,6 +83,21 @@ export function SidebarRootNote({
 
         {isMenuOpen && (
           <div className="absolute right-0 top-6 z-50 bg-card border border-edge rounded-lg shadow-xl py-1 min-w-[160px]">
+            <button
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-ink-secondary hover:bg-hover"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(note.id, note.isFavorite);
+                onContextMenu(null);
+              }}
+            >
+              {note.isFavorite ? (
+                <><StarOff className="w-3.5 h-3.5" /> Remove from Favorites</>
+              ) : (
+                <><Star className="w-3.5 h-3.5" /> Add to Favorites</>
+              )}
+            </button>
+
             {/* Move to notebook */}
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-ink-secondary hover:bg-hover"

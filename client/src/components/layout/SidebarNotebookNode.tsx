@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useDroppable } from '@dnd-kit/core';
+import { useState, useCallback } from 'react';
+import { useDroppable, useDraggable } from '@dnd-kit/core';
 import {
   ChevronRight,
   ChevronDown,
@@ -11,6 +11,8 @@ import {
   FolderInput,
   FolderPlus,
   FilePlus,
+  Star,
+  StarOff,
 } from 'lucide-react';
 import type { FlatNotebookNode } from '../../utils/flattenNotebookTree';
 import type { Notebook } from '../../types/notebook';
@@ -38,6 +40,7 @@ interface SidebarNotebookNodeProps {
   onMove: (id: string, parentId: string | null) => void;
   onCreateChild: (parentId: string) => void;
   onCreateNote: (notebookId: string) => void;
+  onToggleFavorite: (id: string, currentState: boolean) => void;
   onClose?: () => void;
 }
 
@@ -62,16 +65,27 @@ export function SidebarNotebookNode({
   onMove,
   onCreateChild,
   onCreateNote,
+  onToggleFavorite,
   onClose,
 }: SidebarNotebookNodeProps) {
   const nb = node.notebook;
   const isEditing = editingId === nb.id;
   const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
 
-  const { setNodeRef, isOver } = useDroppable({
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
     id: nb.id,
     data: { type: 'notebook', item: nb },
   });
+
+  const { attributes, listeners, setNodeRef: setDragRef, isDragging } = useDraggable({
+    id: nb.id,
+    data: { type: 'notebook', item: nb },
+  });
+
+  const mergedRef = useCallback((el: HTMLDivElement | null) => {
+    setDropRef(el);
+    setDragRef(el);
+  }, [setDropRef, setDragRef]);
 
   const showDropHighlight = isDropTarget || isOver;
 
@@ -89,7 +103,9 @@ export function SidebarNotebookNode({
 
   return (
     <div
-      ref={setNodeRef}
+      ref={mergedRef}
+      {...attributes}
+      {...listeners}
       id={`treeitem-${nb.id}`}
       role="treeitem"
       aria-level={node.depth + 1}
@@ -102,7 +118,7 @@ export function SidebarNotebookNode({
           : isSelected
             ? 'bg-active text-ink'
             : 'text-ink-secondary hover:bg-hover'
-      } ${isFocused ? 'outline outline-2 outline-accent outline-offset-[-2px]' : ''}`}
+      } ${isFocused ? 'outline outline-2 outline-accent outline-offset-[-2px]' : ''} ${isDragging ? 'opacity-50' : ''}`}
       style={{ paddingLeft: `${node.depth * 16 + 8}px` }}
       onClick={() => {
         onSelect(nb.id);
@@ -183,6 +199,20 @@ export function SidebarNotebookNode({
               }}
             >
               <Edit3 className="w-3.5 h-3.5" /> Rename
+            </button>
+
+            <button
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-ink-secondary hover:bg-hover"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(nb.id, nb.isFavorite);
+              }}
+            >
+              {nb.isFavorite ? (
+                <><StarOff className="w-3.5 h-3.5" /> Remove from Favorites</>
+              ) : (
+                <><Star className="w-3.5 h-3.5" /> Add to Favorites</>
+              )}
             </button>
 
             {/* Move to (inline expandable) */}

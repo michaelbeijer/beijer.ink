@@ -11,4 +11,5 @@ export const updateNotebookSchema = z.object({
   parentId: z.string().nullable().optional(),
   icon: z.string().optional(),
   sortOrder: z.number().int().optional(),
+  isFavorite: z.boolean().optional(),
 });

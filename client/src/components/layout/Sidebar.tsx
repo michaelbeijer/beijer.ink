@@ -1,8 +1,9 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useDroppable } from '@dnd-kit/core';
 import { PenLine, FolderPlus, FilePlus, LogOut, Settings, Github } from 'lucide-react';
 import { getNotebooks, createNotebook, deleteNotebook, updateNotebook } from '../../api/notebooks';
-import { getRootNotes, createNote, deleteNote, moveNote } from '../../api/notes';
+import { getRootNotes, getFavoriteNotes, createNote, deleteNote, moveNote, updateNote } from '../../api/notes';
 import { useAuth } from '../../contexts/AuthContext';
 import { ThemePicker } from './ThemePicker';
 import { flattenNotebookTree } from '../../utils/flattenNotebookTree';
@@ -11,6 +12,7 @@ import { useTreeKeyboardNav } from '../../hooks/useTreeKeyboardNav';
 import { SidebarNotebookNode } from './SidebarNotebookNode';
 import { SidebarNoteNode } from './SidebarNoteNode';
 import { SidebarRootNote } from './SidebarRootNote';
+import { SidebarFavoriteItem } from './SidebarFavoriteItem';
 import type { Notebook } from '../../types/notebook';
 
 interface SidebarProps {
@@ -114,6 +116,23 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notes'] });
       queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+    },
+  });
+
+  const toggleNotebookFavoriteMutation = useMutation({
+    mutationFn: ({ id, isFavorite }: { id: string; isFavorite: boolean }) =>
+      updateNotebook(id, { isFavorite }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notebooks'] });
+      queryClient.invalidateQueries({ queryKey: ['notes', 'favorites'] });
+    },
+  });
+
+  const toggleNoteFavoriteMutation = useMutation({
+    mutationFn: ({ id, isFavorite }: { id: string; isFavorite: boolean }) =>
+      updateNote(id, { isFavorite }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
     },
   });
 
@@ -256,6 +275,33 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     moveNoteMutation.mutate({ noteId, notebookId: notebookId || null });
   }
 
+  function handleToggleNotebookFavorite(id: string, currentState: boolean) {
+    toggleNotebookFavoriteMutation.mutate({ id, isFavorite: !currentState });
+    setContextMenuId(null);
+  }
+
+  function handleToggleNoteFavorite(id: string, currentState: boolean) {
+    toggleNoteFavoriteMutation.mutate({ id, isFavorite: !currentState });
+    setContextMenuId(null);
+  }
+
+  const { data: favoriteNotesData = [] } = useQuery({
+    queryKey: ['notes', 'favorites'],
+    queryFn: getFavoriteNotes,
+  });
+
+  const favoriteNotebooks = useMemo(
+    () => notebooks.filter((nb) => nb.isFavorite),
+    [notebooks]
+  );
+
+  const hasFavorites = favoriteNotebooks.length > 0 || favoriteNotesData.length > 0;
+
+  const { setNodeRef: setRootDropRef, isOver: isOverRootDrop } = useDroppable({
+    id: 'root-drop-zone',
+    data: { type: 'root-drop' },
+  });
+
   return (
     <div className="h-full flex flex-col bg-panel">
       {/* Header */}
@@ -296,6 +342,51 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
+        {/* Favorites section */}
+        {hasFavorites && (
+          <>
+            <div className="mb-1 px-2">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-ink-dim">
+                Favorites
+              </span>
+            </div>
+            {favoriteNotebooks.map((nb) => (
+              <SidebarFavoriteItem
+                key={`fav-nb-${nb.id}`}
+                id={nb.id}
+                type="notebook"
+                name={nb.name}
+                isSelected={nb.id === selectedNotebookId && selectedNoteId === null}
+                contextMenuId={contextMenuId}
+                onSelect={() => { onSelectNotebook(nb.id); toggleExpand(nb.id); onClose?.(); }}
+                onRemoveFavorite={() => handleToggleNotebookFavorite(nb.id, true)}
+                onContextMenu={setContextMenuId}
+              />
+            ))}
+            {favoriteNotesData.map((note) => (
+              <SidebarFavoriteItem
+                key={`fav-note-${note.id}`}
+                id={note.id}
+                type="note"
+                name={note.title}
+                isSelected={note.id === selectedNoteId}
+                contextMenuId={contextMenuId}
+                onSelect={() => {
+                  if (note.notebookId) {
+                    onSelectNote(note.id);
+                  } else {
+                    onSelectRootNote(note.id);
+                  }
+                  onClose?.();
+                }}
+                onRemoveFavorite={() => handleToggleNoteFavorite(note.id, true)}
+                onContextMenu={setContextMenuId}
+              />
+            ))}
+            <div className="my-1.5" />
+          </>
+        )}
+
         {flatNodes.map((node, i) => {
           if (node.type === 'note') {
             return (
@@ -315,6 +406,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
                 onDelete={handleDeleteNote}
                 onContextMenu={setContextMenuId}
                 onMoveToNotebook={handleMoveNoteToNotebook}
+                onToggleFavorite={handleToggleNoteFavorite}
                 onClose={onClose}
               />
             );
@@ -342,6 +434,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
               onMove={handleMove}
               onCreateChild={handleCreateChild}
               onCreateNote={handleCreateNoteInNotebook}
+              onToggleFavorite={handleToggleNotebookFavorite}
               onClose={onClose}
             />
           );
@@ -356,6 +449,22 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
             </button>
           </p>
         )}
+
+        {/* Root drop zone - visible when dragging */}
+        <div
+          ref={setRootDropRef}
+          className={`mx-1.5 my-1 rounded-md border border-dashed transition-colors ${
+            isOverRootDrop
+              ? 'border-accent bg-accent/10 py-2'
+              : 'border-transparent py-0'
+          }`}
+        >
+          {isOverRootDrop && (
+            <span className="block text-center text-xs text-accent">
+              Drop here for root level
+            </span>
+          )}
+        </div>
 
         {/* Root notes */}
         {rootNotes.length > 0 && (
@@ -378,6 +487,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
                 onDelete={handleDeleteRootNote}
                 onContextMenu={setContextMenuId}
                 onMoveToNotebook={handleMoveNoteToNotebook}
+                onToggleFavorite={handleToggleNoteFavorite}
               />
             ))}
           </>

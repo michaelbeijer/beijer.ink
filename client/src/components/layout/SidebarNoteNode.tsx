@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDraggable } from '@dnd-kit/core';
 import {
   FileText,
   MoreHorizontal,
@@ -7,6 +8,8 @@ import {
   ChevronRight,
   ChevronDown,
   Folder,
+  Star,
+  StarOff,
 } from 'lucide-react';
 import type { FlatNoteNode } from '../../utils/flattenNotebookTree';
 import type { Notebook } from '../../types/notebook';
@@ -23,6 +26,7 @@ interface SidebarNoteNodeProps {
   onDelete: (noteId: string) => void;
   onContextMenu: (id: string | null) => void;
   onMoveToNotebook: (noteId: string, notebookId: string) => void;
+  onToggleFavorite: (id: string, currentState: boolean) => void;
   onClose?: () => void;
 }
 
@@ -37,10 +41,16 @@ export function SidebarNoteNode({
   onDelete,
   onContextMenu,
   onMoveToNotebook,
+  onToggleFavorite,
   onClose,
 }: SidebarNoteNodeProps) {
   const [showMoveSubmenu, setShowMoveSubmenu] = useState(false);
   const isMenuOpen = contextMenuId === node.id;
+
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: node.id,
+    data: { type: 'note', item: node.note, sourceNotebookId: node.notebookId },
+  });
 
   // Valid move targets: all notebooks except the current one
   const moveTargets = notebooks.filter((nb) => nb.id !== node.notebookId);
@@ -53,6 +63,9 @@ export function SidebarNoteNode({
 
   return (
     <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
       id={`treeitem-${node.id}`}
       role="treeitem"
       aria-level={node.depth + 1}
@@ -62,7 +75,7 @@ export function SidebarNoteNode({
         isSelected
           ? 'bg-active text-ink'
           : 'text-ink-secondary hover:bg-hover'
-      } ${isFocused ? 'outline outline-2 outline-accent outline-offset-[-2px]' : ''}`}
+      } ${isFocused ? 'outline outline-2 outline-accent outline-offset-[-2px]' : ''} ${isDragging ? 'opacity-50' : ''}`}
       style={{ paddingLeft: `${node.depth * 16 + 8}px` }}
       onClick={() => {
         onSelect(node.notebookId, node.noteId);
@@ -96,6 +109,21 @@ export function SidebarNoteNode({
 
         {isMenuOpen && (
           <div className="absolute right-0 top-6 z-50 bg-card border border-edge rounded-lg shadow-xl py-1 min-w-[160px]">
+            <button
+              className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-ink-secondary hover:bg-hover"
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(node.noteId, node.note.isFavorite);
+                onContextMenu(null);
+              }}
+            >
+              {node.note.isFavorite ? (
+                <><StarOff className="w-3.5 h-3.5" /> Remove from Favorites</>
+              ) : (
+                <><Star className="w-3.5 h-3.5" /> Add to Favorites</>
+              )}
+            </button>
+
             {/* Move to notebook */}
             <button
               className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-ink-secondary hover:bg-hover"

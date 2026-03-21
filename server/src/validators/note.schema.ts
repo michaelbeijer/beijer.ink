@@ -9,6 +9,7 @@ export const updateNoteSchema = z.object({
   content: z.string().optional(),
   notebookId: z.string().optional(),
   isPinned: z.boolean().optional(),
+  isFavorite: z.boolean().optional(),
   sortOrder: z.number().int().optional(),
 });
 

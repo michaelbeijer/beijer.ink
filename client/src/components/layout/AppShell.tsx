@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { DndContext, DragOverlay, pointerWithin } from '@dnd-kit/core';
+import { useQuery } from '@tanstack/react-query';
 import { Search } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -14,6 +15,7 @@ import { useMediaQuery } from '../../hooks/useMediaQuery';
 import { useDndNotebooks } from '../../hooks/useDndNotebooks';
 import { useResizePanel } from '../../hooks/useResizePanel';
 import { getNoteById } from '../../api/notes';
+import { getNotebooks } from '../../api/notebooks';
 
 type MobileView = 'sidebar' | 'editor';
 
@@ -32,6 +34,11 @@ export function AppShell() {
   const toggleFullscreen = useCallback(() => setIsFullscreen((prev) => !prev), []);
   const { width: sidebarWidth, handleMouseDown: handleResizeMouseDown } = useResizePanel();
 
+  const { data: notebooks = [] } = useQuery({
+    queryKey: ['notebooks'],
+    queryFn: getNotebooks,
+  });
+
   const {
     sensors,
     activeItem,
@@ -39,7 +46,7 @@ export function AppShell() {
     handleDragOver,
     handleDragEnd,
     handleDragCancel,
-  } = useDndNotebooks();
+  } = useDndNotebooks(notebooks);
 
   const handleSelectNotebook = useCallback((id: string) => {
     setSelectedNotebookId(id);

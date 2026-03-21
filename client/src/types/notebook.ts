@@ -4,6 +4,7 @@ export interface Notebook {
   icon: string | null;
   sortOrder: number;
   parentId: string | null;
+  isFavorite: boolean;
   createdAt: string;
   updatedAt: string;
   _count: { notes: number };

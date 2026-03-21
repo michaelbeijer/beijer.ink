@@ -21,6 +21,7 @@ export async function getNotesInNotebook(notebookId: string) {
       title: true,
       content: true,
       isPinned: true,
+      isFavorite: true,
       sortOrder: true,
       updatedAt: true,
       createdAt: true,
@@ -37,11 +38,30 @@ export async function getRootNotes() {
       title: true,
       content: true,
       isPinned: true,
+      isFavorite: true,
       sortOrder: true,
       updatedAt: true,
       createdAt: true,
     },
     orderBy: [{ isPinned: 'desc' }, { updatedAt: 'desc' }],
+  });
+}
+
+export async function getFavoriteNotes() {
+  return prisma.note.findMany({
+    where: { isFavorite: true },
+    select: {
+      id: true,
+      title: true,
+      content: true,
+      isPinned: true,
+      isFavorite: true,
+      sortOrder: true,
+      notebookId: true,
+      updatedAt: true,
+      createdAt: true,
+    },
+    orderBy: [{ updatedAt: 'desc' }],
   });
 }
 
@@ -76,6 +96,7 @@ export async function updateNote(
     content?: string;
     notebookId?: string;
     isPinned?: boolean;
+    isFavorite?: boolean;
     sortOrder?: number;
   }
 ) {
