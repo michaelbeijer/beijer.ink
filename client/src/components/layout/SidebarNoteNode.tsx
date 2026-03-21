@@ -118,9 +118,9 @@ export function SidebarNoteNode({
               }}
             >
               {node.note.isFavorite ? (
-                <><StarOff className="w-3.5 h-3.5" /> Remove from Favorites</>
+                <><StarOff className="w-3.5 h-3.5" /> Remove from Favourites</>
               ) : (
-                <><Star className="w-3.5 h-3.5" /> Add to Favorites</>
+                <><Star className="w-3.5 h-3.5" /> Add to Favourites</>
               )}
             </button>
 

@@ -295,7 +295,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
     [notebooks]
   );
 
-  const hasFavorites = favoriteNotebooks.length > 0 || favoriteNotesData.length > 0;
+  const hasFavourites = favoriteNotebooks.length > 0 || favoriteNotesData.length > 0;
 
   const { setNodeRef: setRootDropRef, isOver: isOverRootDrop } = useDroppable({
     id: 'root-drop-zone',
@@ -342,12 +342,12 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         onFocus={handleFocus}
         onBlur={handleBlur}
       >
-        {/* Favorites section */}
-        {hasFavorites && (
+        {/* Favourites section */}
+        {hasFavourites && (
           <>
             <div className="mb-1 px-2">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-section-fav">
-                Favorites
+              <span className="text-[10px] font-medium uppercase tracking-wider text-section-label">
+                Favourites
               </span>
             </div>
             {favoriteNotebooks.map((nb) => (
@@ -389,7 +389,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
 
         {flatNodes.length > 0 && (
           <div className="mb-1 px-2">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-section-folders">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-section-label">
               Folders
             </span>
           </div>
@@ -478,7 +478,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         {rootNotes.length > 0 && (
           <>
             <div className="mt-2 mb-1 px-2">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-section-notes">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-section-label">
                 Notes
               </span>
             </div>

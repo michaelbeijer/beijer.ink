@@ -76,7 +76,7 @@ export function SidebarFavoriteItem({
                 onContextMenu(null);
               }}
             >
-              <StarOff className="w-3.5 h-3.5" /> Remove from Favorites
+              <StarOff className="w-3.5 h-3.5" /> Remove from Favourites
             </button>
           </div>
         )}
