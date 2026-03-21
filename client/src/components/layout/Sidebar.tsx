@@ -389,7 +389,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
 
         {flatNodes.length > 0 && (
           <div className="mb-1 px-2">
-            <span className="text-[10px] font-medium uppercase tracking-wider text-section-label">
+            <span className="text-[10px] font-medium uppercase tracking-wider text-fav-text">
               Folders
             </span>
           </div>
@@ -478,7 +478,7 @@ export function Sidebar({ selectedNotebookId, selectedNoteId, onSelectNotebook, 
         {rootNotes.length > 0 && (
           <>
             <div className="mt-2 mb-1 px-2">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-section-label">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-fav-text">
                 Notes
               </span>
             </div>
